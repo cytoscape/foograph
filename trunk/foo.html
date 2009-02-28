@@ -5,31 +5,55 @@
 <script type="text/javascript" src="layout.js"></script>
 </head>
 <body>
-<div id="canvas" style="position:relative;height:400px;width:400px;"></div>
+Random
+<div id="canvas1" style="position:relative;height:400px;width:400px;"></div>
+Circular
+<div id="canvas2" style="position:relative;height:400px;width:400px;"></div>
 <script type="text/javascript">
 <!--
 /* Put together a simple graph. */
 var v1 = new Vertex("1", null, null, -1, -1);
 var v2 = new Vertex("2", null, null, -1, -1);
 var v3 = new Vertex("3", null, null, -1, -1);
+var v4 = new Vertex("4", null, null, -1, -1);
+var v5 = new Vertex("5", null, null, -1, -1);
+var v6 = new Vertex("6", null, null, -1, -1);
+
 
 var e1 = new Edge("1", null, 1, v2);
 var e2 = new Edge("2", null, 1, v3);
-var e3 = new Edge("3", null, 1, v1);
+var e4 = new Edge("4", null, 1, v4);
+var e5 = new Edge("5", null, 1, v5);
+var e6 = new Edge("6", null, 1, v6);
+var e7 = new Edge("6", null, 1, v1);
+var e3 = new Edge("3", e4, 1, v1);
 
 v1.firstEdge = e1;
 v2.firstEdge = e2;
 v3.firstEdge = e3;
+v4.firstEdge = e5;
+v5.firstEdge = e6;
+v6.firstEdge = e7;
+
 v1.next = v2;
 v2.next = v3;
+v3.next = v4;
+v4.next = v5;
+v5.next = v6;
 
 var g = new Graph("Simple graph", v1, true);
 var layout = new Layout(400, 400);
-layout.doRandom(g); // Randomly layout the vertices
+var canvas1 = new jsGraphics("canvas1");
+var canvas2 = new jsGraphics("canvas2");
 
-var canvas = new jsGraphics("canvas");
-g.plot(canvas);
-canvas.paint();
+layout.doRandom(g); // Randomly layout the vertices
+g.plot(canvas1);
+
+layout.doCircular(g); // Layout the vertices evenly on a circle
+g.plot(canvas2);
+
+canvas1.paint();
+canvas2.paint();
 //-->
 </script> 
 </body>

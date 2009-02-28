@@ -78,7 +78,7 @@ function plot(canvas)
   /* Pen related stuff. */
   canvas.setStroke(2);
   
-  /* Draw a vertice as a circle 10 by 10 px */
+  /* Draw a vertice as a circle 20 by 20 px */
   var cHeight = 20; 
   var cWidth = 20;
   
@@ -111,6 +111,22 @@ function plot(canvas)
 }
     
 /**
+ * Calculates the length of a linked list.
+ *
+ * @param list Linked list ending with null
+ */
+function count(list)
+{
+    var i = 0;
+    tmp = list;
+    while (tmp != null) {
+        i++;
+        tmp = tmp.next;
+    }
+    return i;
+}
+
+/**
  * Graph object constructor.
  * 
  * @param label Label this graph.
@@ -123,6 +139,7 @@ function Graph(label, startVertex, directed)
     this.label = label;
     this.startVertex = startVertex;
     this.directed = directed;
+    this.V = count(startVertex);   // Number of vertices.
     
     /* Graph methods. */
     this.nextVertex = nextVertex;
