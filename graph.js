@@ -67,6 +67,48 @@ function insertEdge(label, weight, vertex1, vertex2)
     newEdge = new Edge(label, next, weight, vertex2);
     vertex1.firstEdge = newEdge;
 }
+
+/**
+ * Plots this graph to a canvas.
+ *
+ * @param canvas A proper canvas instance
+ */
+function plot(canvas)
+{
+  /* Pen related stuff. */
+  canvas.setStroke(2);
+  
+  /* Draw a vertice as a circle 10 by 10 px */
+  var cHeight = 20; 
+  var cWidth = 20;
+  
+  /* Drawing. */
+  tmp = g.firstVertex();
+  while(tmp != null) {
+      
+      x = tmp.x;
+      y = tmp.y;
+      /* Draw the vertex. */
+      canvas.setColor("#00ff00");
+      canvas.drawEllipse(x, y, cHeight, cWidth);
+      
+      /* Draw its edges. */
+      canvas.setColor("#000000");
+      e = g.firstEdge(tmp);
+      while(e != null) {
+          /* Line endpoints. */
+          var x1 = Math.round(x + cWidth/2);
+          var y1 = Math.round(y + cHeight/2);
+          var x2 = Math.round(e.endVertex.x + cWidth/2);
+          var y2 = Math.round(e.endVertex.y + cHeight/2);
+          
+          canvas.drawLine(x1, y1, x2, y2);
+          e = g.nextEdge(e);
+      }
+      
+      tmp = g.nextVertex(tmp);
+  }
+}
     
 /**
  * Graph object constructor.
@@ -89,6 +131,7 @@ function Graph(label, startVertex, directed)
     this.nextEdge = nextEdge;
     this.insertVertex = insertVertex;
     this.insertEdge = insertEdge;
+    this.plot = plot;
 }
 
 
