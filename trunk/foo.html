@@ -1,0 +1,70 @@
+<html>
+<head>
+<script type="text/javascript" src="wz_jsgraphics.js"></script>
+<script type="text/javascript" src="graph.js"></script>
+<script type="text/javascript" src="layout.js"></script>
+</head>
+<body>
+<div id="canvas" style="position:relative;height:400px;width:400px;"></div>
+<script type="text/javascript">
+<!--
+/* Put together a simple graph. */
+var v1 = new Vertex("1", null, null, -1, -1);
+var v2 = new Vertex("2", null, null, -1, -1);
+var v3 = new Vertex("3", null, null, -1, -1);
+
+var e1 = new Edge("1", null, 1, v2);
+var e2 = new Edge("2", null, 1, v3);
+var e3 = new Edge("3", null, 1, v1);
+
+v1.firstEdge = e1;
+v2.firstEdge = e2;
+v3.firstEdge = e3;
+v1.next = v2;
+v2.next = v3;
+
+var g = new Graph("Simple graph", v1, true);
+var layout = new Layout(400, 400);
+layout.doRandom(g); // Randomly layout the vertices
+
+var canvas = new jsGraphics("canvas");
+
+/* Pen related stuff. */
+canvas.setStroke(2);
+
+/* Draw a vertice as a circle 10 by 10 px */
+var cHeight = 20; 
+var cWidth = 20;
+
+/* Drawing. */
+tmp = g.firstVertex();
+while(tmp != null) {
+    
+    x = tmp.x;
+    y = tmp.y;
+    /* Draw the vertex. */
+    canvas.setColor("#00ff00");
+    canvas.drawEllipse(x, y, cHeight, cWidth);
+    
+    /* Draw its edges. */
+    canvas.setColor("#000000");
+    e = g.firstEdge(tmp);
+    while(e != null) {
+        /* Line endpoints. */
+        var x1 = Math.round(x + cWidth/2);
+        var y1 = Math.round(y + cHeight/2);
+        var x2 = Math.round(e.endVertex.x + cWidth/2);
+        var y2 = Math.round(e.endVertex.y + cHeight/2);
+        
+        canvas.drawLine(x1, y1, x2, y2);
+        e = g.nextEdge(e);
+    }
+    
+    tmp = g.nextVertex(tmp);
+}
+
+canvas.paint();
+//-->
+</script> 
+</body>
+</html>
