@@ -1,5 +1,7 @@
 /**
- * Calculates the coordinates based on 
+ * Calculates the coordinates based on pure chance.
+ *
+ * @param graph A valid graph instance
  */
 function doRandom(graph)
 {
@@ -12,14 +14,28 @@ function doRandom(graph)
 }
 
 /**
+ * Calculates the coordinates based on force-directed placement
+ * algorithm.
+ *
+ * @param graph A valid graph instance
+ */
+function doForceDirected(graph)
+{
+  // TODO
+}
+
+/**
  * Layout object constructor.
  *
- * @param width - frame width
- * @param height - frame height
+ * @param width Frame width (in px)
+ * @param height Frame height (in px)
  */
 function Layout(width, height)
 {
     this.width = width;
     this.height = height;
+    
+    /* Class methods */
     this.doRandom = doRandom;
+    this.doForceDirected = doForceDirected;
 }
