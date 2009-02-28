@@ -166,6 +166,8 @@ function Vertex(label, next, firstEdge, x, y)
     this.firstEdge = firstEdge;
     this.x = x;
     this.y = y;
+    this.dx = 0;
+    this.dy = 0;
 }
 
 /**
