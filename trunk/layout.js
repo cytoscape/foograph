@@ -24,7 +24,7 @@ function doForceDirected(graph, iterations)
     var area = this.width * this.height;
     this.doCircular(graph);  // Assign random initial positions.
     var k = Math.sqrt(area/graph.V);
-    var t = 40;
+    var t = 400;
 
     var i = 0;
     for(i = 0; i < iterations; i++) {
@@ -41,11 +41,13 @@ function doForceDirected(graph, iterations)
                     difx = v.x - u.x;
                     dify = v.y - u.y;
                     /* Length of the dif vector. */
-                    d = Math.sqrt(difx*difx + dify*dify);
-                    v.dx = v.dx + difx/d * fr(d);
-                    v.dy = v.dy + dify/d * fr(d);
+                    var d = Math.sqrt(difx*difx + dify*dify);
+                    v.dx = v.dx + difx/d * fr(d, k);
+                    v.dy = v.dy + dify/d * fr(d, k);
                 }
+                u = graph.nextVertex(u);
             }
+            v = graph.nextVertex(v);
         }
         
         /* Calculate attractive forces. */
@@ -59,10 +61,13 @@ function doForceDirected(graph, iterations)
                 dify = v.y - u.y;
                 
                 /* Length of the dif vector. */
-                d = Math.sqrt(difx*difx + dify*dify);
-                v.dx = v.dx - difx/d * fa(d);
-                v.dy = v.dy - dify/d * fa(d);
+                var d = Math.sqrt(difx*difx + dify*dify);
+                v.dx = v.dx - difx/d * fa(d, k);
+                v.dy = v.dy - dify/d * fa(d, k);
+                
+                e = e.next;
             }
+            v = graph.nextVertex(v);
         }
         
         /* Limit the maximum displacement to the temperature t
@@ -70,15 +75,17 @@ function doForceDirected(graph, iterations)
         var v = graph.firstVertex();
         while (v != null) {
             /* Length of the displacement vector. */
-            d = Math.sqrt(v.dx*v.dx + v.dy*v.dy);
+            var d = Math.sqrt(v.dx*v.dx + v.dy*v.dy);
             
             /* Limit to the temperature t. */
             v.x = v.x + (v.dx/d)* Math.min(v.dx, t);
             v.y = v.y + (v.dy/d)* Math.min(v.dy, t);
             
             /* Stay inside the frame. */
-            v.x = Math.round(min(width/2, max(-this.width/2, v.x) ));
-            v.y = Math.round(min(height/2, max(-this.height/2, v.y) ));
+            v.x = Math.round(Math.min(this.width/2, Math.max(-this.width/2, v.x) ));
+            v.y = Math.round(Math.min(this.height/2, Math.max(-this.height/2, v.y) ));
+            
+            v = graph.nextVertex(v);
         }
         
         t = cool(t);
@@ -90,7 +97,7 @@ function doForceDirected(graph, iterations)
  * 
  * @param z 
  */
-function fa(z)
+function fa(z, k)
 {
     return z*z/k;
 }
@@ -100,7 +107,7 @@ function fa(z)
  * 
  * @param z 
  */
-function fr(z)
+function fr(z, k)
 {
     return k*k/z;
 }
