@@ -19,9 +19,100 @@ function doRandom(graph)
  *
  * @param graph A valid graph instance
  */
-function doForceDirected(graph)
+function doForceDirected(graph, iterations)
 {
-  // TODO
+    var area = this.width * this.height;
+    this.doCircular(graph);  // Assign random initial positions.
+    var k = Math.sqrt(area/graph.V);
+    var t = 40;
+
+    var i = 0;
+    for(i = 0; i < iterations; i++) {
+        
+        /* Calculate repulsive forces. */
+        var v = graph.firstVertex();
+        while (v != null) {
+            v.dx = 0;
+            v.dy = 0;
+            var u = graph.firstVertex();
+            while (u != null) {
+                if (v != u) {
+                    /* Difference vector between the two vertices. */
+                    difx = v.x - u.x;
+                    dify = v.y - u.y;
+                    /* Length of the dif vector. */
+                    d = Math.sqrt(difx*difx + dify*dify);
+                    v.dx = v.dx + difx/d * fr(d);
+                    v.dy = v.dy + dify/d * fr(d);
+                }
+            }
+        }
+        
+        /* Calculate attractive forces. */
+        var v = graph.firstVertex();
+        while (v != null) {
+            var e = graph.firstEdge(v);
+            while (e != null) {
+                
+                var u = e.endVertex;
+                difx = v.x - u.x;
+                dify = v.y - u.y;
+                
+                /* Length of the dif vector. */
+                d = Math.sqrt(difx*difx + dify*dify);
+                v.dx = v.dx - difx/d * fa(d);
+                v.dy = v.dy - dify/d * fa(d);
+            }
+        }
+        
+        /* Limit the maximum displacement to the temperature t
+           and prevent from being displaced outside frame.     */
+        var v = graph.firstVertex();
+        while (v != null) {
+            /* Length of the displacement vector. */
+            d = Math.sqrt(v.dx*v.dx + v.dy*v.dy);
+            
+            /* Limit to the temperature t. */
+            v.x = v.x + (v.dx/d)* Math.min(v.dx, t);
+            v.y = v.y + (v.dy/d)* Math.min(v.dy, t);
+            
+            /* Stay inside the frame. */
+            v.x = Math.round(min(width/2, max(-this.width/2, v.x) ));
+            v.y = Math.round(min(height/2, max(-this.height/2, v.y) ));
+        }
+        
+        t = cool(t);
+    }
+}
+
+/**
+ * Attractive "force".
+ * 
+ * @param z 
+ */
+function fa(z)
+{
+    return z*z/k;
+}
+
+/**
+ * Repulsive "force".
+ * 
+ * @param z 
+ */
+function fr(z)
+{
+    return k*k/z;
+}
+
+/**
+ * Cooling function.
+ *
+ * @param t Current temperature.
+ */
+function cool(t) 
+{
+    return t/2;
 }
 
 /**
