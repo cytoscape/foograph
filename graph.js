@@ -83,17 +83,12 @@ function plot(canvas)
   var cHeight = 20; 
   var cWidth = 20;
   
-  /* Drawing. */
+  /* Draw edges first */
   tmp = g.firstVertex();
-  while(tmp != null) {
-      x = tmp.x;
-      y = tmp.y;
+  while (tmp != null) {
+      var x = tmp.x;
+      var y = tmp.y;
       
-      /* Draw the vertex. */
-      canvas.setColor("#00ff00");
-      canvas.drawEllipse(x, y, cHeight, cWidth);
-      
-      /* Draw its edges. */
       canvas.setColor("#000000");
       e = g.firstEdge(tmp);
       while(e != null) {
@@ -106,6 +101,19 @@ function plot(canvas)
           canvas.drawLine(x1, y1, x2, y2);
           e = g.nextEdge(e);
       }
+      
+      tmp = g.nextVertex(tmp);
+  }
+  
+  /* Drawing. */
+  tmp = g.firstVertex();
+  while (tmp != null) {
+      var x = tmp.x;
+      var y = tmp.y;
+      
+      /* Draw the vertex. */
+      canvas.setColor("#00ff00");
+      canvas.fillEllipse(x, y, cHeight, cWidth);
       
       tmp = g.nextVertex(tmp);
   }
