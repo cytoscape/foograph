@@ -22,10 +22,14 @@ function doRandom(graph)
 function doForceDirected(graph, iterations)
 {
     var area = this.width * this.height;
-    this.doCircular(graph);  // Assign random initial positions.
+    this.doRandom(graph);  // Assign random initial positions.
     var k = Math.sqrt(area/graph.V);
-    var t = 400;
 
+    var t = this.width/10; // Temperature.
+    var dt = t/(iterations+1);
+    
+    var eps = 10; // Minimum vertex distance.
+    
     var i = 0;
     for(i = 0; i < iterations; i++) {
         
@@ -40,10 +44,12 @@ function doForceDirected(graph, iterations)
                     /* Difference vector between the two vertices. */
                     difx = v.x - u.x;
                     dify = v.y - u.y;
+                    
                     /* Length of the dif vector. */
-                    var d = Math.sqrt(difx*difx + dify*dify);
-                    v.dx = v.dx + difx/d * fr(d, k);
-                    v.dy = v.dy + dify/d * fr(d, k);
+                    var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
+                    var force = fr(d, k)
+                    v.dx = v.dx + (difx/d) * force;
+                    v.dy = v.dy + (dify/d) * force;
                 }
                 u = graph.nextVertex(u);
             }
@@ -51,7 +57,7 @@ function doForceDirected(graph, iterations)
         }
         
         /* Calculate attractive forces. */
-        var v = graph.firstVertex();
+        v = graph.firstVertex();
         while (v != null) {
             var e = graph.firstEdge(v);
             while (e != null) {
@@ -59,13 +65,18 @@ function doForceDirected(graph, iterations)
                 var u = e.endVertex;
                 difx = v.x - u.x;
                 dify = v.y - u.y;
+                var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
+                var force = fa(d, k);
                 
                 /* Length of the dif vector. */
                 var d = Math.sqrt(difx*difx + dify*dify);
-                v.dx = v.dx - difx/d * fa(d, k);
-                v.dy = v.dy - dify/d * fa(d, k);
+                v.dx = v.dx - (difx/d) * force;
+                v.dy = v.dy - (dify/d) * force;
                 
-                e = e.next;
+                u.dx = u.dx + (difx/d) * force;
+                u.dy = u.dy + (dify/d) * force;
+                
+                e = graph.nextEdge(e);
             }
             v = graph.nextVertex(v);
         }
@@ -75,20 +86,32 @@ function doForceDirected(graph, iterations)
         var v = graph.firstVertex();
         while (v != null) {
             /* Length of the displacement vector. */
-            var d = Math.sqrt(v.dx*v.dx + v.dy*v.dy);
-            
+            var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
+        
             /* Limit to the temperature t. */
-            v.x = v.x + (v.dx/d)* Math.min(v.dx, t);
-            v.y = v.y + (v.dy/d)* Math.min(v.dy, t);
+            v.x = v.x + (v.dx/d) * Math.min(d, t);
+            v.y = v.y + (v.dy/d) * Math.min(d, t);
             
             /* Stay inside the frame. */
-            v.x = Math.round(Math.min(this.width/2, Math.max(-this.width/2, v.x) ));
-            v.y = Math.round(Math.min(this.height/2, Math.max(-this.height/2, v.y) ));
+            borderWidth = this.width / 50;
+            if (v.x < borderWidth) {
+                v.x = borderWidth + Math.random()*borderWidth * 2;
+            } else if (v.x > this.width - borderWidth - Math.random()*borderWidth * 2) {
+                v.x = this.width - borderWidth - Math.random()*borderWidth * 2;
+            }
+            if (v.y < borderWidth) {
+                v.y = borderWidth + Math.random()*borderWidth * 2;
+            } else if (v.x > this.height - borderWidth - Math.random()*borderWidth * 2) {
+                v.y = this.height - borderWidth - Math.random()*borderWidth * 2;
+            }
+            
+            v.x = Math.round(v.x);
+            v.y = Math.round(v.y);
             
             v = graph.nextVertex(v);
         }
-        
-        t = cool(t);
+        /* Cool. */
+        t -= dt;
     }
 }
 
@@ -110,16 +133,6 @@ function fa(z, k)
 function fr(z, k)
 {
     return k*k/z;
-}
-
-/**
- * Cooling function.
- *
- * @param t Current temperature.
- */
-function cool(t) 
-{
-    return t/2;
 }
 
 /**
