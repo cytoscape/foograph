@@ -1,16 +1,19 @@
 <html>
+<title>Testing grounds.</title>
 <head>
 <script type="text/javascript" src="wz_jsgraphics.js"></script>
 <script type="text/javascript" src="graph.js"></script>
 <script type="text/javascript" src="layout.js"></script>
 </head>
 <body>
-Random
-<div id="canvas1" style="position:relative;height:400px;width:400px;"></div>
-Circular
-<div id="canvas2" style="position:relative;height:400px;width:400px;"></div>
-Fruchterman-Reingold
-<div id="canvas3" style="position:relative;height:400px;width:400px;"></div>
+Lo and behold!<br>
+<select id="algo" onchange="paint()">
+  <option>Select algorithm</option>
+  <option>Random</option>
+  <option>Circular</option>
+  <option>Fruchterman-Reingold</option>
+</select>
+<div id="canvas" style="position:relative;height:400px;width:400px;"></div>
 <script type="text/javascript">
 <!--
 /* Put together a simple graph. */
@@ -46,22 +49,26 @@ g.insertVertex(v5);
 g.insertVertex(v6);
 
 var layout = new Layout(400, 400);
-var canvas1 = new jsGraphics("canvas1");
-var canvas2 = new jsGraphics("canvas2");
-var canvas3 = new jsGraphics("canvas3");
+var canvas = new jsGraphics("canvas");
 
-layout.doRandom(g); // Randomly layout the vertices
-g.plot(canvas1);
-
-layout.doCircular(g); // Layout the vertices evenly on a circle
-g.plot(canvas2);
-
-layout.doForceDirected(g, 1000); // Layout the vertices evenly on a circle
-g.plot(canvas3);
-
-canvas1.paint();
-canvas2.paint();
-canvas3.paint();
+function paint() 
+{
+    var selection = document.getElementById("algo").selectedIndex-1;
+    canvas.clear();
+    switch (selection) {
+        case 0:
+            layout.doRandom(g); // Randomly layout the vertices
+            break;
+        case 1:
+            layout.doCircular(g); // Layout the vertices evenly on a circle
+            break;
+        case 2:
+            layout.doForceDirected(g, 1000); // Fruchterman-Reingold algorithm
+            break;
+    }
+    g.plot(canvas);
+    canvas.paint();
+}
 //-->
 </script> 
 </body>
