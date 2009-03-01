@@ -148,6 +148,17 @@ function doCircular(graph)
 }
 
 /**
+ * Calculates coordinates based on the hirearchy of the graph
+ * Assumes acyclic, directed graph
+ *
+ * @param graph A valid graph instance
+ */
+ function doRootedTree(graph)
+ {
+  
+ }
+
+/**
  * Layout object constructor.
  *
  * @param width Frame width (in px)
