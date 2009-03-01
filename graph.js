@@ -50,6 +50,7 @@ function insertVertex(vertex)
     /* Insert at the beginning. */
     vertex.next = this.startVertex;
     this.startVertex = vertex;
+    this.vertexCount++;
 }
 
 /**
@@ -85,9 +86,9 @@ function plot(canvas)
   /* Drawing. */
   tmp = g.firstVertex();
   while(tmp != null) {
-      
       x = tmp.x;
       y = tmp.y;
+      
       /* Draw the vertex. */
       canvas.setColor("#00ff00");
       canvas.drawEllipse(x, y, cHeight, cWidth);
@@ -109,37 +110,20 @@ function plot(canvas)
       tmp = g.nextVertex(tmp);
   }
 }
-    
-/**
- * Calculates the length of a linked list.
- *
- * @param list Linked list ending with null
- */
-function count(list)
-{
-    var i = 0;
-    tmp = list;
-    while (tmp != null) {
-        i++;
-        tmp = tmp.next;
-    }
-    return i;
-}
 
 /**
  * Graph object constructor.
  * 
  * @param label Label this graph.
- * @param firstVertex First vertex of a linked list of vertices
  * @param directed true or false
  */
-function Graph(label, startVertex, directed)
+function Graph(label, directed)
 {
     /* Fields. */
     this.label = label;
-    this.startVertex = startVertex;
+    this.startVertex = null;
     this.directed = directed;
-    this.V = count(startVertex);   // Number of vertices.
+    this.vertexCount = 0;
     
     /* Graph methods. */
     this.nextVertex = nextVertex;
@@ -150,7 +134,6 @@ function Graph(label, startVertex, directed)
     this.insertEdge = insertEdge;
     this.plot = plot;
 }
-
 
 /**
  * Vertex object constructor.

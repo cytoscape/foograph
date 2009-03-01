@@ -14,13 +14,14 @@ Fruchterman-Reingold
 <script type="text/javascript">
 <!--
 /* Put together a simple graph. */
+var g = new Graph("Simple graph", true);
+
 var v1 = new Vertex("1", null, null, -1, -1);
 var v2 = new Vertex("2", null, null, -1, -1);
 var v3 = new Vertex("3", null, null, -1, -1);
 var v4 = new Vertex("4", null, null, -1, -1);
 var v5 = new Vertex("5", null, null, -1, -1);
 var v6 = new Vertex("6", null, null, -1, -1);
-
 
 var e1 = new Edge("1", null, 1, v2);
 var e2 = new Edge("2", null, 1, v3);
@@ -37,13 +38,13 @@ v4.firstEdge = e5;
 v5.firstEdge = e6;
 v6.firstEdge = e7;
 
-v1.next = v2;
-v2.next = v3;
-v3.next = v4;
-v4.next = v5;
-v5.next = v6;
+g.insertVertex(v1);
+g.insertVertex(v2);
+g.insertVertex(v3);
+g.insertVertex(v4);
+g.insertVertex(v5);
+g.insertVertex(v6);
 
-var g = new Graph("Simple graph", v1, true);
 var layout = new Layout(400, 400);
 var canvas1 = new jsGraphics("canvas1");
 var canvas2 = new jsGraphics("canvas2");

@@ -23,7 +23,7 @@ function doForceDirected(graph, iterations)
 {
     var area = this.width * this.height;
     this.doRandom(graph);  // Assign random initial positions.
-    var k = Math.sqrt(area/graph.V);
+    var k = Math.sqrt(area/graph.vertexCount);
 
     var t = this.width/10; // Temperature.
     var dt = t/(iterations+1);
@@ -100,6 +100,7 @@ function doForceDirected(graph, iterations)
             } else if (v.x > this.width - borderWidth) {
                 v.x = this.width - borderWidth;
             }
+            
             if (v.y < borderWidth) {
                 v.y = borderWidth; 
             } else if (v.x > this.height - borderWidth) {
@@ -133,12 +134,11 @@ function doCircular(graph)
     var dy = this.height/2;
 
     /* Calculate the step so that the vertices are equally apart. */
-    var step = 2*Math.PI/graph.V; 
+    var step = 2*Math.PI/graph.vertexCount; 
     var t = 0; // Start at "time" 0.
     
     var tmp = graph.firstVertex();
-    while (tmp != null)
-    {
+    while (tmp != null) {
         tmp.x = Math.round(r*Math.cos(t) + dx);
         tmp.y = Math.round(r*Math.sin(t) + dy);
         t = t + step;
