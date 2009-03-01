@@ -160,6 +160,14 @@ function Vertex(label, next, firstEdge, x, y)
     this.dx = 0;
     this.dy = 0;
     this.level = -1;
+    this.numberOfParents = 0;
+}
+
+/**
+ * toString overload for easier debugging
+ */
+ Vertex.prototype.toString = function() {
+    return this.label + this.level;
 }
 
 /**
