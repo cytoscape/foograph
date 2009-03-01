@@ -85,7 +85,7 @@ function doForceDirected(graph, iterations)
         /* Limit the maximum displacement to the temperature t
            and prevent from being displaced outside frame.     */
         var v = graph.firstVertex();
-        while (v != null) {
+                while (v != null) {
             /* Length of the displacement vector. */
             var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
         
@@ -96,14 +96,14 @@ function doForceDirected(graph, iterations)
             /* Stay inside the frame. */
             borderWidth = this.width / 50;
             if (v.x < borderWidth) {
-                v.x = borderWidth + Math.random()*borderWidth * 2;
-            } else if (v.x > this.width - borderWidth - Math.random()*borderWidth * 2) {
-                v.x = this.width - borderWidth - Math.random()*borderWidth * 2;
+                v.x = borderWidth; 
+            } else if (v.x > this.width - borderWidth) {
+                v.x = this.width - borderWidth;
             }
             if (v.y < borderWidth) {
-                v.y = borderWidth + Math.random()*borderWidth * 2;
-            } else if (v.x > this.height - borderWidth - Math.random()*borderWidth * 2) {
-                v.y = this.height - borderWidth - Math.random()*borderWidth * 2;
+                v.y = borderWidth; 
+            } else if (v.x > this.height - borderWidth) {
+                v.y = this.height - borderWidth;
             }
             
             v.x = Math.round(v.x);
