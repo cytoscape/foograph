@@ -156,76 +156,103 @@ function doCircular(graph)
 function doRootedTree(graph)
 {
     var rootCandidate = new Array();
-    
-    //TODO: - Replace arrays with some tree-based structures
-    //TODO: - vertex alignment (center)
+    var sortedVertices = new Array();
     
     /* All vertices are potential root candidates */
-    var tmp = graph.firstVertex();
-    while(tmp != null) {
-      rootCandidate.push(tmp);
-      tmp.level = -1;
-      tmp = graph.nextVertex(tmp);
+    var v = graph.firstVertex();
+    while(v != null) {
+      rootCandidate.push(v);
+      v.level = -1;
+      v.numberOfParents = 0;
+      v = graph.nextVertex(v);
     }
-    
-    var numOfCandidates = rootCandidate.length;
     
     /* Eliminate vertices which have edges pointing towards them */
     var v = graph.firstVertex();
-    EliminateCandidates:
     while(v != null) {
         var e = graph.firstEdge(v);
         while(e != null)
-        {          
-          /* Shouldn't happen unless graph is cyclic */
-          if (numOfCandidates < 2)
-            break EliminateCandidates;
-            
-          var u = e.endVertex;
-          for (var i=0; i<rootCandidate.length;i = i+1)
-          {
-            if (rootCandidate[i] == u)
-            {
-              rootCandidate[i] = null;
-              numOfCandidates -= 1;
-            }
-          }
+        { 
+          e.endVertex.numberOfParents += 1;
           e = graph.nextEdge(e);
         }
       v = graph.nextVertex(v);
     }
-
-    var maxLeft = 25;
-    var queue = new Array();
-    for(i=0; i<rootCandidate.length; i+=1)
+    
+    var sortQueue = new Array();
+    var drawQueue = new Array();
+    
+    var v = graph.firstVertex();
+    while(v != null)
     {
-      if (rootCandidate[i] == null)
-        continue;
-        
-      rootCandidate[i].level = 0;
-      queue.push(rootCandidate[i]);
+      if (v.numberOfParents == 0)
+      {
+        v.level = 0;
+        rootCandidate.push(v);
+        sortQueue.push(v);
+        drawQueue.push(v);
+      }
+      v = graph.nextVertex(v);
     }
     
-    
-    lastLevel = -1
-    while (queue.length > 0)
+    while(sortQueue.length > 0)
     {
-      var v = queue.pop();
+      var v = sortQueue.pop();
+      sortedVertices.push(v);
+      var e = graph.firstEdge(v);
+      while(e != null)
+      {
+        e.endVertex.numberOfParents -= 1;
+        if (e.endVertex.level == -1)
+          e.endVertex.level = v.level + 1;
+        if (e.endVertex.numberOfParents == 0)
+          sortQueue.push(e.endVertex);
+        e = graph.nextEdge(e);
+      }
+    }
+    
+
+    for (var i = sortedVertices.length - 1; i>=0; i-=1)
+    {
+      e = graph.firstEdge(sortedVertices[i]);
+      
+      var minLevel = -1;
+      while (e != null)
+      {
+        if (e.endVertex.level < minLevel || minLevel == -1) {
+          minLevel = e.endVertex.level
+        }
+        e = graph.nextEdge(e);
+      }
+      if (minLevel != -1)
+        sortedVertices[i].level = minLevel - 1;
+    }
+    
+    var maxLeft = 25;
+   
+    lastLevel = -1
+    while (drawQueue.length > 0)
+    {
+      var v = drawQueue.pop();      
+      if (v.level == -1)
+        continue;
+      
       
       if (v.level <= lastLevel)
         maxLeft += 50;
       lastLevel = v.level;
       
-      v.y = 25 + v.level * 50;      
+      v.y = 75 + v.level * 50;      
       v.x = maxLeft;      
+      
+      v.level = -1;
       
       e = graph.firstEdge(v);
       while (e != null)
       {
-        if (e.endVertex.level == -1)
+        if (e.endVertex.level != -1)
         {
-          e.endVertex.level = v.level+1;
-          queue.push(e.endVertex);
+          drawQueue.push(e.endVertex);
         }
         e = graph.nextEdge(e);
       }
