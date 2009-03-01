@@ -159,6 +159,7 @@ function Vertex(label, next, firstEdge, x, y)
     this.y = y;
     this.dx = 0;
     this.dy = 0;
+    this.level = -1;
 }
 
 /**
