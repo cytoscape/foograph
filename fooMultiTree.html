@@ -1,0 +1,159 @@
+<html>
+<title>Testing grounds.</title>
+<head>
+<script type="text/javascript" src="wz_jsgraphics.js"></script>
+<script type="text/javascript" src="graph.js"></script>
+<script type="text/javascript" src="layout.js"></script>
+</head>
+<body>
+Lo and behold!<br>
+<select id="algo" onchange="paint()">
+  <option>Select algorithm</option>
+  <option>Random</option>
+  <option>Circular</option>
+  <option>Fruchterman-Reingold</option>
+  <option>Rooted Tree</option>
+</select>
+<div id="canvas" style="position:relative;height:400px;width:400px;"></div>
+<script type="text/javascript">
+<!--
+/* Put together a simple graph. */
+var g = new Graph("Simple graph", true);
+
+var v1 = new Vertex("tina", null, null, -1, -1);
+var v2 = new Vertex("thomas", null, null, -1, -1);
+var v3 = new Vertex("william", null, null, -1, -1);
+var v4 = new Vertex("sally", null, null, -1, -1);
+var v5 = new Vertex("jeffrey", null, null, -1, -1);
+var v6 = new Vertex("vanessa", null, null, -1, -1);
+var v7 = new Vertex("patrick", null, null, -1, -1);
+var v8 = new Vertex("susan", null, null, -1, -1);
+var v9 = new Vertex("patricia", null, null, -1, -1);
+var v10 = new Vertex("andrew", null, null, -1, -1);
+var v11 = new Vertex("melanie", null, null, -1, -1);
+var v12 = new Vertex("jill", null, null, -1, -1);
+var v13 = new Vertex("john", null, null, -1, -1);
+var v14 = new Vertex("joanne", null, null, -1, -1);
+var v15 = new Vertex("michael", null, null, -1, -1);
+var v16 = new Vertex("michelle", null, null, -1, -1);
+var v17 = new Vertex("steve", null, null, -1, -1);
+
+g.insertVertex(v1);
+g.insertVertex(v2);
+g.insertVertex(v3);
+g.insertVertex(v4);
+g.insertVertex(v5);
+g.insertVertex(v6);
+g.insertVertex(v7);
+g.insertVertex(v8);
+g.insertVertex(v9);
+g.insertVertex(v10);
+g.insertVertex(v11);
+g.insertVertex(v12);
+g.insertVertex(v13);
+g.insertVertex(v14);
+g.insertVertex(v15);
+g.insertVertex(v16);
+g.insertVertex(v17);
+
+g.insertEdge("", 1, v1, v3);
+g.insertEdge("", 1, v2, v3);
+g.insertEdge("", 1, v2, v4);
+g.insertEdge("", 1, v2, v5);
+g.insertEdge("", 1, v3, v6);
+g.insertEdge("", 1, v3, v9);
+g.insertEdge("", 1, v4, v10);
+g.insertEdge("", 1, v4, v11);
+g.insertEdge("", 1, v6, v8);
+g.insertEdge("", 1, v7, v8);
+g.insertEdge("", 1, v9, v13);
+g.insertEdge("", 1, v10, v14);
+g.insertEdge("", 1, v12, v14);
+g.insertEdge("", 1, v13, v15);
+g.insertEdge("", 1, v13, v16);
+g.insertEdge("", 1, v14, v17);
+
+var w1 = new Vertex("frank", null, null, -1, -1);
+var w2 = new Vertex("estelle", null, null, -1, -1);
+var w3 = new Vertex("morty", null, null, -1, -1);
+var w4 = new Vertex("helen", null, null, -1, -1);
+var w5 = new Vertex("george", null, null, -1, -1);
+var w6 = new Vertex("elaine", null, null, -1, -1);
+var w7 = new Vertex("jerry", null, null, -1, -1);
+var w8 = new Vertex("kramer", null, null, -1, -1);
+var w9 = new Vertex("anna", null, null, -1, -1);
+
+g.insertVertex(w1);
+g.insertVertex(w2);
+g.insertVertex(w3);
+g.insertVertex(w4);
+g.insertVertex(w5);
+g.insertVertex(w6);
+g.insertVertex(w7);
+g.insertVertex(w8);
+g.insertVertex(w9);
+
+g.insertEdge("", 1, w1, w5);
+g.insertEdge("", 1, w2, w5);
+g.insertEdge("", 1, w3, w7);
+g.insertEdge("", 1, w4, w7);
+g.insertEdge("", 1, w5, w8);
+g.insertEdge("", 1, w6, w8);
+g.insertEdge("", 1, w6, w9);
+g.insertEdge("", 1, w7, w9);
+
+var x1 = new Vertex("ana", null, null, -1, -1);
+var x2 = new Vertex("aleksandr", null, null, -1, -1);
+var x3 = new Vertex("margaret", null, null, -1, -1);
+var x4 = new Vertex("aleksander", null, null, -1, -1);
+var x5 = new Vertex("nevia", null, null, -1, -1);
+var x6 = new Vertex("alessandro", null, null, -1, -1);
+var x7 = new Vertex("luana", null, null, -1, -1);
+var x8 = new Vertex("daniela", null, null, -1, -1);
+
+g.insertVertex(x1);
+g.insertVertex(x2);
+g.insertVertex(x3);
+g.insertVertex(x4);
+g.insertVertex(x5);
+g.insertVertex(x6);
+g.insertVertex(x7);
+g.insertVertex(x8);
+
+g.insertEdge("", 1, x1, x4);
+g.insertEdge("", 1, x2, x4);
+g.insertEdge("", 1, x3, x5);
+g.insertEdge("", 1, x3, x6);
+g.insertEdge("", 1, x4, x7);
+g.insertEdge("", 1, x4, x8);
+g.insertEdge("", 1, x5, x7);
+g.insertEdge("", 1, x5, x8);
+
+var layout = new Layout(400, 400);
+var canvas = new jsGraphics("canvas");
+
+function paint() 
+{
+    var selection = document.getElementById("algo").selectedIndex-1;
+    canvas.clear();
+    switch (selection) {
+        case 0:
+            layout.doRandom(g); // Randomly layout the vertices
+            break;
+        case 1:
+            layout.doCircular(g); // Layout the vertices evenly on a circle
+            break;
+        case 2:
+            layout.doForceDirected(g, 1000); // Fruchterman-Reingold algorithm
+            break;
+        case 3:
+            layout.doRootedTree(g); // Hierarchycal layout
+            break;
+    }
+    g.plot(canvas);
+    canvas.paint();
+}
+//-->
+</script> 
+</body>
+</html>
