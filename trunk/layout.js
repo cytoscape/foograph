@@ -29,10 +29,12 @@ function doForceDirected(graph, iterations)
     var dt = t/(iterations+1);
     
     var eps = 10; // Minimum vertex distance.
+       
+    // Attractive and repulsive forces
+    function Fa(z) { return z*z/k; }
+    function Fr(z) { return k*k/z; }
     
-    var i = 0;
-    for(i = 0; i < iterations; i++) {
-        
+    for (var i = 0; i < iterations; i++) {
         /* Calculate repulsive forces. */
         var v = graph.firstVertex();
         while (v != null) {
@@ -47,7 +49,7 @@ function doForceDirected(graph, iterations)
                     
                     /* Length of the dif vector. */
                     var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
-                    var force = fr(d, k)
+                    var force = Fr(d);
                     v.dx = v.dx + (difx/d) * force;
                     v.dy = v.dy + (dify/d) * force;
                 }
@@ -61,12 +63,11 @@ function doForceDirected(graph, iterations)
         while (v != null) {
             var e = graph.firstEdge(v);
             while (e != null) {
-                
                 var u = e.endVertex;
                 difx = v.x - u.x;
                 dify = v.y - u.y;
                 var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
-                var force = fa(d, k);
+                var force = Fa(d);
                 
                 /* Length of the dif vector. */
                 var d = Math.sqrt(difx*difx + dify*dify);
@@ -110,29 +111,10 @@ function doForceDirected(graph, iterations)
             
             v = graph.nextVertex(v);
         }
+        
         /* Cool. */
         t -= dt;
     }
-}
-
-/**
- * Attractive "force".
- * 
- * @param z 
- */
-function fa(z, k)
-{
-    return z*z/k;
-}
-
-/**
- * Repulsive "force".
- * 
- * @param z 
- */
-function fr(z, k)
-{
-    return k*k/z;
 }
 
 /**
