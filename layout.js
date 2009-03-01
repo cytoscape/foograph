@@ -149,14 +149,88 @@ function doCircular(graph)
 
 /**
  * Calculates coordinates based on the hirearchy of the graph
- * Assumes acyclic, directed graph
+ * Assumes directed graph
  *
  * @param graph A valid graph instance
  */
- function doRootedTree(graph)
- {
-  
- }
+function doRootedTree(graph)
+{
+    var rootCandidate = new Array();
+    
+    //TODO: - Replace arrays with some tree-based structures
+    //TODO: - vertex alignment (center)
+    
+    /* All vertices are potential root candidates */
+    var tmp = graph.firstVertex();
+    while(tmp != null) {
+      rootCandidate.push(tmp);
+      tmp.level = -1;
+      tmp = graph.nextVertex(tmp);
+    }
+    
+    var numOfCandidates = rootCandidate.length;
+    
+    /* Eliminate vertices which have edges pointing towards them */
+    var v = graph.firstVertex();
+    EliminateCandidates:
+    while(v != null) {
+        var e = graph.firstEdge(v);
+        while(e != null)
+        {          
+          /* Shouldn't happen unless graph is cyclic */
+          if (numOfCandidates < 2)
+            break EliminateCandidates;
+            
+          var u = e.endVertex;
+          for (var i=0; i<rootCandidate.length;i = i+1)
+          {
+            if (rootCandidate[i] == u)
+            {
+              rootCandidate[i] = null;
+              numOfCandidates -= 1;
+            }
+          }
+          e = graph.nextEdge(e);
+        }
+      v = graph.nextVertex(v);
+    }
+
+    var maxLeft = 25;
+    var queue = new Array();
+    for(i=0; i<rootCandidate.length; i+=1)
+    {
+      if (rootCandidate[i] == null)
+        continue;
+        
+      rootCandidate[i].level = 0;
+      queue.push(rootCandidate[i]);
+    }
+    
+    
+    lastLevel = -1
+    while (queue.length > 0)
+    {
+      var v = queue.pop();
+      
+      if (v.level <= lastLevel)
+        maxLeft += 50;
+      lastLevel = v.level;
+      
+      v.y = 25 + v.level * 50;      
+      v.x = maxLeft;      
+      
+      e = graph.firstEdge(v);
+      while (e != null)
+      {
+        if (e.endVertex.level == -1)
+        {
+          e.endVertex.level = v.level+1;
+          queue.push(e.endVertex);
+        }
+        e = graph.nextEdge(e);
+      }
+    }
+}
 
 /**
  * Layout object constructor.
@@ -173,4 +247,5 @@ function Layout(width, height)
     this.doRandom = doRandom;
     this.doForceDirected = doForceDirected;
     this.doCircular = doCircular;
+    this.doRootedTree = doRootedTree;
 }
