@@ -2,7 +2,7 @@
  * Return next vertex in list.
  *
  * @param vertex
- * @return Next vertex in list.
+ * @return Next vertex in list
  */
 function nextVertex(vertex)
 {
@@ -12,7 +12,7 @@ function nextVertex(vertex)
 /**
  * Return the starting vertex of this graph.
  *
- * @return This graph's first vertex in its vertex list.
+ * @return This graph's first vertex in its vertex list
  */
 function firstVertex()
 {
@@ -22,7 +22,7 @@ function firstVertex()
 /**
  * Get the first edge of vertex's neighbour list.
  *
- * @param vertex
+ * @param vertex A valid Vertex instance
  */
 function firstEdge(vertex)
 {
@@ -33,7 +33,7 @@ function firstEdge(vertex)
  * Return next edge in list.
  *
  * @param edge
- * @return Next edge in list.
+ * @return Next edge in list
  */
 function nextEdge(edge)
 {
@@ -43,7 +43,7 @@ function nextEdge(edge)
 /**
  * Insert a vertex into this graph.
  * 
- * @param vertex
+ * @param vertex A valid Vertex instance
  */
 function insertVertex(vertex)
 {
@@ -56,10 +56,10 @@ function insertVertex(vertex)
 /**
  * Insert an edge vertex1 --> vertex2.
  *  
- * @param label - Label for this edge.
- * @param weight - Weight of this edge.
- * @param vertex1 - Starting vertex.
- * @param vertex2 - Ending vertex.
+ * @param label Label for this edge
+ * @param weight Weight of this edge
+ * @param vertex1 Starting Vertex instance
+ * @param vertex2 Ending Vertex instance
  */
 function insertEdge(label, weight, vertex1, vertex2)
 {
@@ -114,7 +114,7 @@ function plot(canvas)
 /**
  * Graph object constructor.
  * 
- * @param label Label this graph.
+ * @param label Label of this graph
  * @param directed true or false
  */
 function Graph(label, directed)
@@ -156,10 +156,10 @@ function Vertex(label, next, firstEdge, x, y)
 /**
  * Edge object constructor.
  *
- * @param label
- * @param next
- * @param weight
- * @param endVertex
+ * @param label Label of this edge
+ * @param next Next edge reference
+ * @param weight Edge weight
+ * @param endVertex Destination Vertex instance
  */
 function Edge(label, next, weight, endVertex)
 {
