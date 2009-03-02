@@ -80,8 +80,8 @@ function plot(canvas)
   canvas.setStroke(2);
   
   /* Draw a vertice as a circle 20 by 20 px */
-  var cHeight = 20; 
-  var cWidth = 20;
+  var cHeight = 40; 
+  var cWidth = 80;
   
   /* Draw edges first */
   tmp = g.firstVertex();
@@ -112,8 +112,12 @@ function plot(canvas)
       var y = tmp.y;
       
       /* Draw the vertex. */
-      canvas.setColor("#00ff00");
-      canvas.fillEllipse(x, y, cHeight, cWidth);
+      canvas.setColor("#ffffff");
+	  canvas.fillEllipse(x, y, cWidth, cHeight);
+	  canvas.setColor("#000000");
+	  canvas.drawEllipse(x, y, cWidth, cHeight);
+	  canvas.drawStringRect(tmp.label, x, y+13, 80, 'center')
+      
       
       tmp = g.nextVertex(tmp);
   }

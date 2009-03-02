@@ -210,24 +210,39 @@ function doRootedTree(graph)
         e = graph.nextEdge(e);
       }
     }
+    for (var i = 0; i<sortedVertices.length; i+=1)
+    {
+      e = graph.firstEdge(sortedVertices[i]);
+      
+      if (e != null)
+      {
+        do
+        {
+          if (e.endVertex.level <= sortedVertices[i].level)
+            e.endVertex.level = sortedVertices[i].level +1;
+            e = graph.nextEdge(e);
+        } while (e != null);
+      }
+    }
     
-
     for (var i = sortedVertices.length - 1; i>=0; i-=1)
     {
       e = graph.firstEdge(sortedVertices[i]);
       
-      var minLevel = -1;
-      while (e != null)
+      if (e != null)
       {
-        if (e.endVertex.level < minLevel || minLevel == -1) {
-          minLevel = e.endVertex.level
-        }
-        e = graph.nextEdge(e);
+        minLevel = e.endVertex.level
+        do
+        {
+          if (e.endVertex.level < minLevel)
+            minLevel = e.endVertex.level
+          e = graph.nextEdge(e);
+        } while (e != null);
+        if (sortedVertices[i].level < minLevel)
+          sortedVertices[i].level = minLevel - 1;
       }
-      if (minLevel != -1)
-        sortedVertices[i].level = minLevel - 1;
     }
-    
+
     var maxLeft = 25;
    
     lastLevel = -1
@@ -239,11 +254,11 @@ function doRootedTree(graph)
       
       
       if (v.level <= lastLevel)
-        maxLeft += 50;
+        maxLeft += 100;
       lastLevel = v.level;
       
-      v.y = 75 + v.level * 50;      
-      v.x = maxLeft;      
+      v.y = 75 + v.level * 80;
+      v.x = maxLeft;
       
       v.level = -1;
       
