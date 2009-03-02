@@ -27,12 +27,15 @@ function doForceDirected(graph, iterations)
 
     var t = this.width/10; // Temperature.
     var dt = t/(iterations+1);
-    
-    var eps = 10; // Minimum vertex distance.
+
+    var eps = 20; // Minimum vertex distance.
+    var A = 1.5;  // Fine tune attraction.
+    var R = 0.5;  // Fine tune repulsion.
        
     // Attractive and repulsive forces
-    function Fa(z) { return z*z/k; }
-    function Fr(z) { return k*k/z; }
+    function Fa(z) { return A*z*z/k; }
+    function Fr(z) { return R*k*k/z; }
+    function Fw(z) { return 1/z*z; }  // Force emited by the walls
     
     for (var i = 0; i < iterations; i++) {
         /* Calculate repulsive forces. */
@@ -44,8 +47,8 @@ function doForceDirected(graph, iterations)
             while (u != null) {
                 if (v != u) {
                     /* Difference vector between the two vertices. */
-                    difx = v.x - u.x;
-                    dify = v.y - u.y;
+                    var difx = v.x - u.x;
+                    var dify = v.y - u.y;
                     
                     /* Length of the dif vector. */
                     var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
@@ -55,6 +58,20 @@ function doForceDirected(graph, iterations)
                 }
                 u = graph.nextVertex(u);
             }
+            /* Treat the walls as static objects emiting force Fw. */
+            // Calculate the sum of "wall" forces in (v.x, v.y)
+            var x = Math.max(eps, v.x);
+            var y = Math.max(eps, v.y);
+            var wx = Math.max(eps, this.width - v.x);
+            var wy = Math.max(eps, this.height - v.y);   // Gotta love all those NaN's :)
+            var Rx = Fw(x) - Fw(wx);
+            var Ry = Fw(y) - Fw(wy);
+            
+          //  document.write(x+", "+y+", "+Rx+", "+Ry+"<br>");
+            
+            v.dx = v.dx + Rx;
+            v.dy = v.dy + Ry;
+            
             v = graph.nextVertex(v);
         }
         
@@ -70,7 +87,7 @@ function doForceDirected(graph, iterations)
                 var force = Fa(d);
                 
                 /* Length of the dif vector. */
-                var d = Math.sqrt(difx*difx + dify*dify);
+                var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
                 v.dx = v.dx - (difx/d) * force;
                 v.dy = v.dy - (dify/d) * force;
                 
@@ -85,7 +102,7 @@ function doForceDirected(graph, iterations)
         /* Limit the maximum displacement to the temperature t
            and prevent from being displaced outside frame.     */
         var v = graph.firstVertex();
-                while (v != null) {
+        while (v != null) {
             /* Length of the displacement vector. */
             var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
         
@@ -103,7 +120,7 @@ function doForceDirected(graph, iterations)
             
             if (v.y < borderWidth) {
                 v.y = borderWidth; 
-            } else if (v.x > this.height - borderWidth) {
+            } else if (v.y > this.height - borderWidth) {
                 v.y = this.height - borderWidth;
             }
             
