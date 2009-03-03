@@ -1,9 +1,18 @@
 <html>
 <title>Testing grounds.</title>
 <head>
+<!-- Canvas drawing library -->
 <script type="text/javascript" src="wz_jsgraphics.js"></script>
-<script type="text/javascript" src="graph.js"></script>
-<script type="text/javascript" src="layout.js"></script>
+
+<!-- General graph objects -->
+<script type="text/javascript" src="lib/graph.js"></script>
+
+<!-- Vertex layouts manager -->
+<script type="text/javascript" src="lib/vlayouts/random.js"></script>
+<script type="text/javascript" src="lib/vlayouts/circular.js"></script>
+<script type="text/javascript" src="lib/vlayouts/forcedirected.js"></script>
+<script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
+
 </head>
 <body>
 Lo and behold!<br>
@@ -14,7 +23,7 @@ Lo and behold!<br>
   <option>Fruchterman-Reingold</option>
   <option>Rooted Tree</option>
 </select>
-<div id="canvas" style="position:relative;height:400px;width:400px;"></div>
+<div id="canvas" style="position:relative;height:800px;width:800px;"></div>
 <script type="text/javascript">
 <!--
 /* Put together a simple graph. */
@@ -129,29 +138,54 @@ g.insertEdge("", 1, x4, x8);
 g.insertEdge("", 1, x5, x7);
 g.insertEdge("", 1, x5, x8);
 
-var layout = new Layout(400, 400);
+//var layout = new Layout(800, 800);
 var canvas = new jsGraphics("canvas");
 
 function paint() 
 {
-    var selection = document.getElementById("algo").selectedIndex-1;
-    canvas.clear();
-    switch (selection) {
-        case 0:
-            layout.doRandom(g); // Randomly layout the vertices
-            break;
-        case 1:
-            layout.doCircular(g); // Layout the vertices evenly on a circle
-            break;
-        case 2:
-            layout.doForceDirected(g, 400); // Fruchterman-Reingold algorithm
-            break;
-        case 3:
-            layout.doRootedTree(g); // Hierarchycal layout
-            break;
+  var selection = document.getElementById("algo").selectedIndex - 1;
+  var vertexLayoutManager = null;
+  canvas.clear();
+  
+  // FIXME
+  width = 800;
+  height = 800;
+  
+  switch (selection) {
+    case 0: {
+      // Randomly layout the vertices
+      vertexLayoutManager = new RandomVertexLayout(width, height);
+      break;
     }
-    g.plot(canvas);
-    canvas.paint();
+    case 1: {
+      // Layout the vertices evenly on a circle
+      vertexLayoutManager = new CircularVertexLayout(width, height);
+      break;
+    }
+    case 2: {
+      // Fruchterman-Reingold algorithm
+      vertexLayoutManager = new ForceDirectedVertexLayout(width, height, 400);
+      break;
+    }
+    case 3: {
+      // Hierarchycal layout
+      vertexLayoutManager = new RootedTreeVertexLayout(width, height);
+      break;
+    }
+  }
+  
+  // When the above switch fails, we fallback to random layout
+  if (!vertexLayoutManager)
+    vertexLayoutManager = new RandomVertexLayout(width, height);
+  
+  // Do vertex layout
+  vertexLayoutManager.layout(g);
+  
+  // Plot graph  to canvas
+  g.plot(canvas);
+  
+  // Display plotted graph
+  canvas.paint();
 }
 //-->
 </script> 
