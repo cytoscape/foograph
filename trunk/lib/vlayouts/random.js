@@ -27,6 +27,6 @@ RandomVertexLayout.prototype.layout = function(graph)
   while (v != null) {
     v.x = Math.round(Math.random() * this.width);
     v.y = Math.round(Math.random() * this.height);
-    v = v.next;
+    v = graph.nextVertex(v);
   }
 }
