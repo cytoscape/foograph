@@ -18,7 +18,8 @@
 /* Registerig graph adds it to GraphPool list and to the select box */
 var GraphPool = new Array();
 
-function registerGraph(g) {
+function registerGraph(g)
+{
   var graphSelect = document.getElementById("graph");
   var i = GraphPool.length;
   GraphPool[i] =  g;
@@ -61,14 +62,16 @@ function paint()
   
   /* Select Graph */
   var g
-  if (graphSelection > 0)
-    g = GraphPool[graphSelection];
-  else if (GraphPool.length > 0)
-    g = GraphPool[0];
-  else
-  {
-    alert('No graph is loaded');
-    return;
+  switch (true) {
+    case graphSelection > 0:
+      g = GraphPool[graphSelection];
+      break;
+    case GraphPool.length > 0:
+      g = GraphPool[0];
+      break;
+    case true:
+      alert('No graph is loaded');
+      return;
   }
   
   var vertexLayoutManager = null;
@@ -78,7 +81,6 @@ function paint()
   // FIXME
   width = 800;
   height = 800;
- 
  
   switch (algoSelection) {
     case 0: {
