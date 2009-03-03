@@ -84,13 +84,13 @@ function plot(canvas)
   var cWidth = 80;
   
   /* Draw edges first */
-  tmp = g.firstVertex();
-  while (tmp != null) {
-      var x = tmp.x;
-      var y = tmp.y;
+  var v = this.firstVertex();
+  while (v != null) {
+      var x = v.x;
+      var y = v.y;
       
       canvas.setColor("#000000");
-      e = g.firstEdge(tmp);
+      e = this.firstEdge(v);
       while(e != null) {
           /* Line endpoints. */
           var x1 = Math.round(x + cWidth/2);
@@ -99,27 +99,26 @@ function plot(canvas)
           var y2 = Math.round(e.endVertex.y + cHeight/2);
           
           canvas.drawLine(x1, y1, x2, y2);
-          e = g.nextEdge(e);
+          e = this.nextEdge(e);
       }
       
-      tmp = g.nextVertex(tmp);
+      v = this.nextVertex(v);
   }
   
   /* Drawing. */
-  tmp = g.firstVertex();
-  while (tmp != null) {
-      var x = tmp.x;
-      var y = tmp.y;
+  v = this.firstVertex();
+  while (v != null) {
+      var x = v.x;
+      var y = v.y;
       
       /* Draw the vertex. */
       canvas.setColor("#ffffff");
-	  canvas.fillEllipse(x, y, cWidth, cHeight);
-	  canvas.setColor("#000000");
-	  canvas.drawEllipse(x, y, cWidth, cHeight);
-	  canvas.drawStringRect(tmp.label, x, y+13, 80, 'center')
+      canvas.fillEllipse(x, y, cWidth, cHeight);
+      canvas.setColor("#000000");
+      canvas.drawEllipse(x, y, cWidth, cHeight);
+      canvas.drawStringRect(v.label, x, y+13, 80, 'center')
       
-      
-      tmp = g.nextVertex(tmp);
+      v = this.nextVertex(v);
   }
 }
 

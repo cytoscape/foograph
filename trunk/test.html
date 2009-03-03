@@ -1,0 +1,122 @@
+<html>
+<title>Testing grounds.</title>
+<head>
+<!-- Canvas drawing library -->
+<script type="text/javascript" src="wz_jsgraphics.js"></script>
+
+<!-- General graph objects -->
+<script type="text/javascript" src="lib/graph.js"></script>
+
+<!-- Vertex layouts manager -->
+<script type="text/javascript" src="lib/vlayouts/random.js"></script>
+<script type="text/javascript" src="lib/vlayouts/circular.js"></script>
+<script type="text/javascript" src="lib/vlayouts/forcedirected.js"></script>
+<script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
+
+<script type="text/javascript">
+<!--
+/* Registerig graph adds it to GraphPool list and to the select box */
+var GraphPool = new Array();
+
+function registerGraph(g) {
+  var graphSelect = document.getElementById("graph");
+  var i = GraphPool.length;
+  GraphPool[i] =  g;
+  graphSelect.options[i+1]=new Option(g.label, i);
+}
+//-->
+</script>
+</head>
+<body>
+Lo and behold!<br>
+<select id="graph" onchange="paint()">
+  <option>Select graph</option>
+</select>
+<select id="algo" onchange="paint()">
+  <option>Select algorithm</option>
+  <option>Random</option>
+  <option>Circular</option>
+  <option>Fruchterman-Reingold</option>
+  <option>Rooted Tree</option>
+</select>
+<div id="canvas" style="position:relative;height:800px;width:800px;"></div>
+
+<script type="text/javascript" src="samples/famrel.js"></script>
+<script type="text/javascript" src="samples/programprofile.js"></script>
+<script type="text/javascript" src="samples/full.js"></script>
+<script type="text/javascript" src="samples/simple.js"></script>
+<script type="text/javascript" src="samples/tree.js"></script>
+<script type="text/javascript" src="samples/worlddynamics.js"></script>
+
+<script type="text/javascript">
+<!--
+
+//var layout = new Layout(800, 800);
+var canvas = new jsGraphics("canvas");
+
+function paint() 
+{
+  var algoSelection = document.getElementById("algo").selectedIndex - 1;
+  var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  
+  /* Select Graph */
+  var g
+  if (graphSelection > 0)
+    g = GraphPool[graphSelection];
+  else if (GraphPool.length > 0)
+    g = GraphPool[0];
+  else
+  {
+    alert('No graph is loaded');
+    return;
+  }
+  
+  var vertexLayoutManager = null;
+  
+  canvas.clear();
+  
+  // FIXME
+  width = 800;
+  height = 800;
+ 
+ 
+  switch (algoSelection) {
+    case 0: {
+      // Randomly layout the vertices
+      vertexLayoutManager = new RandomVertexLayout(width, height);
+      break;
+    }
+    case 1: {
+      // Layout the vertices evenly on a circle
+      vertexLayoutManager = new CircularVertexLayout(width, height);
+      break;
+    }
+    case 2: {
+      // Fruchterman-Reingold algorithm
+      vertexLayoutManager = new ForceDirectedVertexLayout(width, height, 400);
+      break;
+    }
+    case 3: {
+      // Hierarchycal layout
+      vertexLayoutManager = new RootedTreeVertexLayout(width, height);
+      break;
+    }
+  }
+
+  // When the above switch fails, we fallback to random layout
+  if (!vertexLayoutManager)
+    vertexLayoutManager = new RandomVertexLayout(width, height);
+  
+  // Do vertex layout
+  vertexLayoutManager.layout(g);
+  
+  // Plot graph  to canvas
+  g.plot(canvas);
+  
+  // Display plotted graph
+  canvas.paint();
+}
+//-->
+</script> 
+</body>
+</html>
