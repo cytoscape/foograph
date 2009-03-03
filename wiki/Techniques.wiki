@@ -1,0 +1,37 @@
+#summary Advantages and Disadvantages of Graph Drawing Techniques
+
+= Introduction =
+
+Summary of
+http://www.cs.brown.edu/~rt/papers/gd-tutorial/gd-constraints.pdf
+
+= Details =
+
+*Planarization Techniques*
+Pro:
++ fast running time
++ applicable to straight-line, orthogonal and polyline drawings
++ supported by theoretical results on planar drawings
++ works well in practice, also for large graphs
++ limted constraint satisfaction capability
+Con:
+- relatively complex to implement
+- topological transformations may alter the user’s mental map
+- difficult to extend to 3D
+- limted constraint satisfaction capability
+
+*Force-Directed Techniques*
+Pro:
++ relatively simple to implement
++ heuristic improvements easily added
++ smooth evolution of the drawing into the final configuration helps preserving the user’s mental map
++ can be extended to 3D
++ often able to detect and display symmetries
++ works well in practice for small graphs with regular structure
++ limted constraint satisfaction capability
+Con:
+- slow running time
+- few theoretical results on the quality of the drawings produced
+- diffcult to extend to orthogonal and polyline drawings
+- limited constraint satisfaction capability
+
