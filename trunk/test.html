@@ -40,6 +40,7 @@ Lo and behold!<br>
   <option>Fruchterman-Reingold</option>
   <option>Rooted Tree</option>
 </select>
+<div id="report" style="position:relative"></div><br>
 <div id="canvas" style="position:relative;height:800px;width:800px;"></div>
 
 <script type="text/javascript" src="samples/famrel.js"></script>
@@ -52,7 +53,6 @@ Lo and behold!<br>
 <script type="text/javascript">
 <!--
 
-//var layout = new Layout(800, 800);
 var canvas = new jsGraphics("canvas");
 
 function paint() 
@@ -109,14 +109,25 @@ function paint()
   if (!vertexLayoutManager)
     vertexLayoutManager = new RandomVertexLayout(width, height);
   
+  var start = new Date();
   // Do vertex layout
   vertexLayoutManager.layout(g);
+  var end = new Date();
   
+  var duration = end.valueOf() - start.valueOf();
+  var report = document.getElementById("report");
+  report.innerHTML = "Layouting took: "+duration/1000+"s<br>";   // Output layouting time
+  
+  start = new Date();
   // Plot graph  to canvas
   g.plot(canvas);
   
   // Display plotted graph
   canvas.paint();
+  end = new Date();
+  
+  duration = end.valueOf() - start.valueOf();
+  report.innerHTML += "Rendering took: "+duration/1000+"s<br>";   // Output rendering time
 }
 //-->
 </script> 

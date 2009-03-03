@@ -76,48 +76,27 @@ function insertEdge(label, weight, vertex1, vertex2)
  */
 function plot(canvas)
 {
-  /* Pen related stuff. */
-  canvas.setStroke(2);
-  
-  /* Draw a vertice as a circle 20 by 20 px */
-  var cHeight = 40; 
-  var cWidth = 80;
-  
   /* Draw edges first */
   var v = this.firstVertex();
   while (v != null) {
-      var x = v.x;
-      var y = v.y;
       
-      canvas.setColor("#000000");
       e = this.firstEdge(v);
       while(e != null) {
-          /* Line endpoints. */
-          var x1 = Math.round(x + cWidth/2);
-          var y1 = Math.round(y + cHeight/2);
-          var x2 = Math.round(e.endVertex.x + cWidth/2);
-          var y2 = Math.round(e.endVertex.y + cHeight/2);
           
-          canvas.drawLine(x1, y1, x2, y2);
+          /* Draw edge. */
+          e.draw(canvas, v);
           e = this.nextEdge(e);
       }
       
       v = this.nextVertex(v);
   }
   
-  /* Drawing. */
+  /* Draw the vertices. */
   v = this.firstVertex();
   while (v != null) {
-      var x = v.x;
-      var y = v.y;
       
-      /* Draw the vertex. */
-      canvas.setColor("#ffffff");
-      canvas.fillEllipse(x, y, cWidth, cHeight);
-      canvas.setColor("#000000");
-      canvas.drawEllipse(x, y, cWidth, cHeight);
-      canvas.drawStringRect(v.label, x, y+13, 80, 'center')
-      
+      /* Draw vertex. */
+      v.draw(canvas);
       v = this.nextVertex(v);
   }
 }
@@ -153,7 +132,7 @@ function Graph(label, directed)
  * @param next Reference to the next vertex of this graph
  * @param firstEdge First edge of a linked list of edges
  */
-function Vertex(label, next, firstEdge, x, y)
+function Vertex(label, next, firstEdge, x, y, style)
 {
     this.label = label;
     this.next = next;
@@ -164,6 +143,13 @@ function Vertex(label, next, firstEdge, x, y)
     this.dy = 0;
     this.level = -1;
     this.numberOfParents = 0;
+    
+    if(style != null) {    
+        this.style = style;
+    }
+    else { // Default
+        this.style = new VertexStyle('ellipse', 80, 40, '#ffffff', '#000000', true);
+    }
 }
 
 /**
@@ -174,6 +160,58 @@ function Vertex(label, next, firstEdge, x, y)
 }
 
 /**
+ * Draw vertex method.
+ *
+ * @param canvas jsGraphics instance
+ */
+ Vertex.prototype.draw = function(canvas)
+ {
+    var x = this.x;
+    var y = this.y;
+    var width = this.style.width;
+    var height = this.style.height;
+    var shape = this.style.shape;
+    
+    canvas.setStroke(2);
+    canvas.setColor(this.style.fillColor);
+    
+    if(shape == 'rect') {
+        canvas.fillRect(x, y, width, height);
+        canvas.setColor(this.style.borderColor);
+        canvas.drawRect(x, y, width, height);
+    }
+    else { // Default to ellipse
+        canvas.fillEllipse(x, y, width, height);
+        canvas.setColor(this.style.borderColor);
+        canvas.drawEllipse(x, y, width, height);
+    }
+    
+    if(this.style.showLabel) {
+        canvas.drawStringRect(this.label, x, y + height/2 - 7, width, 'center');
+    }
+ }
+ 
+ /**
+ * VertexStyle object type for defining vertex style options.
+ *
+ * @param shape Shape of the vertex ('ellipse' or 'rect')
+ * @param width Width in px
+ * @param height Height in px
+ * @param fillColor The color with which the vertex is drawn (RGB HEX string)
+ * @param borderColor The color with which the border of the vertex is drawn (RGB HEX string)
+ * @param showLabel Show the vertex label or not
+ */
+function VertexStyle(shape, width, height, fillColor, borderColor, showLabel)
+{
+    this.shape = shape;
+    this.width = width;
+    this.height = height;
+    this.fillColor = fillColor;
+    this.borderColor = borderColor;
+    this.showLabel = showLabel;
+}
+ 
+/**
  * Edge object constructor.
  *
  * @param label Label of this edge
@@ -181,10 +219,60 @@ function Vertex(label, next, firstEdge, x, y)
  * @param weight Edge weight
  * @param endVertex Destination Vertex instance
  */
-function Edge(label, next, weight, endVertex)
+function Edge(label, next, weight, endVertex, style)
 {
     this.label = label;
     this.next = next;
     this.weight = weight;
     this.endVertex = endVertex;
+    this.style = style;
+    
+    if(style != null) {    
+        this.style = style;
+    }
+    else {  // Set to default
+        this.style = new EdgeStyle(2, '#000000', true, false);
+    }
+}
+
+/**
+ * Draw edge method. Draws edge "v" --> "this".
+ *
+ * @param canvas jsGraphics instance
+ * @param v Start vertex
+ */
+Edge.prototype.draw = function(canvas, v) 
+{
+    var x1 = Math.round(v.x + v.style.width/2);
+    var y1 = Math.round(v.y + v.style.height/2);
+    var x2 = Math.round(this.endVertex.x + this.endVertex.style.width/2);
+    var y2 = Math.round(this.endVertex.y + this.endVertex.style.height/2);
+
+    canvas.setStroke(this.style.width);
+    canvas.setColor(this.style.color);
+    canvas.drawLine(x1, y1, x2, y2);
+    
+    // TO DO
+    if(this.style.showArrow) {    
+    }
+    
+    // TO DO
+    if(this.style.showLabel) {
+    }
+}
+
+/**
+ * EdgeStyle object type for defining vertex style options.
+ *
+ * @param width Edge line width
+ * @param color The color with which the edge is drawn
+ * @param showArrow Draw the edge arrow (only if directed)
+ * @param showLabel Show the edge label or not
+ */
+function EdgeStyle(width, color, showArrow, showLabel)
+{
+    this.width = width;
+    this.color = color;
+    this.showArrow = showArrow;
+    this.showLabel = showLabel;
 }
