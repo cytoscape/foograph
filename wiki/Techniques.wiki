@@ -7,7 +7,7 @@ http://www.cs.brown.edu/~rt/papers/gd-tutorial/gd-constraints.pdf
 
 = Details =
 
-*Planarization Techniques*
+== Planarization Techniques ==
 Pro:
 + fast running time
 + applicable to straight-line, orthogonal and polyline drawings
@@ -20,7 +20,7 @@ Con:
 - difficult to extend to 3D
 - limted constraint satisfaction capability
 
-*Force-Directed Techniques*
+== Force-Directed Techniques ==
 Pro:
 + relatively simple to implement
 + heuristic improvements easily added
@@ -34,4 +34,3 @@ Con:
 - few theoretical results on the quality of the drawings produced
 - diffcult to extend to orthogonal and polyline drawings
 - limited constraint satisfaction capability
-
