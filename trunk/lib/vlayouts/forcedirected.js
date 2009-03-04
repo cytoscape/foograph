@@ -19,6 +19,85 @@ function ForceDirectedVertexLayout(width, height, iterations)
 }
 
 /**
+ * Identifies connected components of a graph and creates "central"
+ * vertices for each component. If there is more than one component,
+ * all central vertices of individual components are connected to
+ * each other to prevent component drift.
+ *
+ * @param graph A valid graph instance
+ */
+ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
+{
+  var components = new Array();
+  
+  // Depth first search
+  function dfs(vertex)
+  {
+    var stack = new Array();
+    var centerVertex = new Vertex("", null, null, -1, -1);
+    centerVertex.hidden = true;
+    components.push(centerVertex);
+    
+    function visitVertex(v)
+    {
+      // Connect visited vertex to "central" component vertex
+      edge = graph.insertEdge("", 1, v, centerVertex);
+      edge.hidden = true;
+      v.__dfsVisited = true;
+      
+      e = graph.firstEdge(v);
+      while (e != null) {
+        if (!e.hidden)
+          stack.push(e.endVertex);
+        
+        e = graph.nextEdge(e);
+      }
+      
+      if (v.reverseEdges) {
+        for (var i in v.reverseEdges) {
+          if (!v.reverseEdges[i].hidden)
+            stack.push(v.reverseEdges[i]);
+        }
+      }
+    }
+    
+    visitVertex(vertex);
+    while (stack.length > 0) {
+      var u = stack.pop();
+      
+      if (!u.__dfsVisited && !u.hidden) {
+        visitVertex(u);
+      }
+    }
+    
+    // Add component central vertex to graph
+    graph.insertVertex(centerVertex);
+  }
+  
+  // Iterate through all vertices starting DFS from each vertex
+  // that hasn't been visited yet.
+  v = graph.firstVertex();
+  while (v != null) {
+    if (!v.__dfsVisited && !v.hidden)
+      dfs(v);
+    
+    v = graph.nextVertex(v);
+  }
+  
+  // Interconnect all center vertices
+  if (components.length > 1) {
+    for (var i in components) {
+      for (var j in components) {
+        if (i != j) {
+          e = g.insertEdge("", 1, components[i], components[j]);
+          e.hidden = true;
+        }
+      }
+    }
+  }
+}
+
+/**
  * Calculates the coordinates based on force-directed placement
  * algorithm.
  *
@@ -40,6 +119,10 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
   function Fa(z) { return A*z*z/k; }
   function Fr(z) { return R*k*k/z; }
   function Fw(z) { return 1/z*z; }  // Force emited by the walls
+  
+  // Initiate component identification and virtual vertex creation
+  // to prevent disconnected graph components from drifting too far apart
+  this.__identifyComponents(graph);
   
   // Assign initial random positions
   randomLayout = new RandomVertexLayout(this.width, this.height);

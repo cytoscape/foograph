@@ -60,6 +60,7 @@ function insertVertex(vertex)
  * @param weight Weight of this edge
  * @param vertex1 Starting Vertex instance
  * @param vertex2 Ending Vertex instance
+ * @return Newly created Edge instance
  */
 function insertEdge(label, weight, vertex1, vertex2)
 {
@@ -67,6 +68,13 @@ function insertEdge(label, weight, vertex1, vertex2)
     next = this.firstEdge(vertex1);
     newEdge = new Edge(label, next, weight, vertex2);
     vertex1.firstEdge = newEdge;
+    
+    /* Create a reverse mapping */
+    if (!vertex2.reverseEdges)
+      vertex2.reverseEdges = new Array();
+    
+    vertex2.reverseEdges.push(vertex1);
+    return newEdge;
 }
 
 /**
@@ -80,12 +88,16 @@ function plot(canvas)
   var v = this.firstVertex();
   while (v != null) {
       
-      e = this.firstEdge(v);
-      while(e != null) {
-          
-          /* Draw edge. */
-          e.draw(canvas, v);
-          e = this.nextEdge(e);
+      if (!v.hidden) {
+          e = this.firstEdge(v);
+          while(e != null) {
+              
+              /* Draw edge (if not hidden) */
+              if (!e.hidden)
+                e.draw(canvas, v);
+              
+              e = this.nextEdge(e);
+          }
       }
       
       v = this.nextVertex(v);
@@ -95,8 +107,10 @@ function plot(canvas)
   v = this.firstVertex();
   while (v != null) {
       
-      /* Draw vertex. */
-      v.draw(canvas);
+      /* Draw vertex (if not hidden) */
+      if (!v.hidden)
+        v.draw(canvas);
+      
       v = this.nextVertex(v);
   }
 }
@@ -143,6 +157,7 @@ function Vertex(label, next, firstEdge, x, y, style)
     this.dy = 0;
     this.level = -1;
     this.numberOfParents = 0;
+    this.hidden = false;
     
     if(style != null) {    
         this.style = style;
@@ -226,6 +241,7 @@ function Edge(label, next, weight, endVertex, style)
     this.weight = weight;
     this.endVertex = endVertex;
     this.style = style;
+    this.hidden = false;
     
     if(style != null) {    
         this.style = style;
