@@ -28,21 +28,22 @@ function ForceDirectedVertexLayout(width, height, iterations)
  */
 ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
 {
+  var componentCenters = new Array();
   var components = new Array();
   
   // Depth first search
   function dfs(vertex)
   {
     var stack = new Array();
+    var component = new Array();
     var centerVertex = new Vertex("", null, null, -1, -1);
     centerVertex.hidden = true;
-    components.push(centerVertex);
+    componentCenters.push(centerVertex);
+    components.push(component);
     
     function visitVertex(v)
     {
-      // Connect visited vertex to "central" component vertex
-      edge = graph.insertEdge("", 1, v, centerVertex);
-      edge.hidden = true;
+      component.push(v);
       v.__dfsVisited = true;
       
       e = graph.firstEdge(v);
@@ -69,9 +70,6 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
         visitVertex(u);
       }
     }
-    
-    // Add component central vertex to graph
-    graph.insertVertex(centerVertex);
   }
   
   // Iterate through all vertices starting DFS from each vertex
@@ -85,11 +83,23 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
   }
   
   // Interconnect all center vertices
-  if (components.length > 1) {
+  if (componentCenters.length > 1) {
+    for (var i in componentCenters) {
+      graph.insertVertex(componentCenters[i]);
+    }
+    
     for (var i in components) {
-      for (var j in components) {
+      for (var j in components[i]) {
+        // Connect visited vertex to "central" component vertex
+        edge = graph.insertEdge("", 1, components[i][j], componentCenters[i]);
+        edge.hidden = true;
+      }
+    }
+    
+    for (var i in componentCenters) {
+      for (var j in componentCenters) {
         if (i != j) {
-          e = g.insertEdge("", 1, components[i], components[j]);
+          e = g.insertEdge("", 1, componentCenters[i], componentCenters[j]);
           e.hidden = true;
         }
       }
