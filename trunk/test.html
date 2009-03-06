@@ -14,6 +14,9 @@
 <script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
 <script type="text/javascript" src="lib/vlayouts/curvilinearFR.js"></script>
 
+<!-- Edge layouts manager -->
+<script type="text/javascript" src="lib/elayouts/curvilinear.js"></script>
+
 <script type="text/javascript">
 <!--
 /* Registerig graph adds it to GraphPool list and to the select box */
@@ -42,6 +45,10 @@ Lo and behold!<br>
   <option>Rooted Tree</option>
   <option>Curvilinear F-R</option>
 </select>
+<select id="edgeLayout" onchange="applyEdgeLayout()">
+  <option>Choose an edge layout to apply</option>
+  <option>Curvilinear method</option>
+</select>
 <div id="report" style="position:relative"></div><br>
 <div id="canvas" style="position:relative;height:800px;width:800px;"></div>
 
@@ -57,6 +64,10 @@ Lo and behold!<br>
 <!--
 
 var canvas = new jsGraphics("canvas");
+  
+// FIXME
+width = 800;
+height = 800;
 
 function paint() 
 {
@@ -80,10 +91,6 @@ function paint()
   var vertexLayoutManager = null;
   
   canvas.clear();
-  
-  // FIXME
-  width = 800;
-  height = 800;
  
   switch (algoSelection) {
     case 0: {
@@ -98,7 +105,7 @@ function paint()
     }
     case 2: {
       // Fruchterman-Reingold algorithm
-      vertexLayoutManager = new ForceDirectedVertexLayout(width, height, 400);
+      vertexLayoutManager = new ForceDirectedVertexLayout(width, height, 400, true);
       break;
     }
     case 3: {
@@ -108,7 +115,7 @@ function paint()
     }
     case 4: {
       // Curvilinear
-      vertexLayoutManager = new CurvilinearFRVertexLayout(width, height, 400);
+      vertexLayoutManager = new CurvilinearFRVertexLayout(width, height, 400, true);
       break;
     }
   }
@@ -137,6 +144,43 @@ function paint()
   
   duration = end.valueOf() - start.valueOf();
   report.innerHTML += "Rendering took: "+duration/1000+"s<br>";   // Output rendering time
+}
+
+/* Applies an edge layout. Obviously. */
+function applyEdgeLayout()
+{
+  var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  var edgeLayoutSelection = document.getElementById("edgeLayout").selectedIndex - 1;
+  
+  /* Select Graph */
+  var g
+  switch (true) {
+    case graphSelection > 0:
+      g = GraphPool[graphSelection];
+      break;
+    case GraphPool.length > 0:
+      g = GraphPool[0];
+      break;
+    case true:
+      alert('No graph is loaded');
+      return;
+  }
+  
+  switch (edgeLayoutSelection) {
+    case 0: {
+      // Layout edges
+      edgeLayoutManager = new CurvilinearEdgeLayout(width, height, 1000);
+      break;
+    }
+  }
+  
+  canvas.clear();
+  edgeLayoutManager.layout(g);
+  
+  g.plot(canvas);
+  
+  // Display plotted graph
+  canvas.paint();
 }
 //-->
 </script> 

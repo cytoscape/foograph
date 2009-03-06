@@ -10,12 +10,15 @@
  *
  * @param width Layout width
  * @param height Layout height
+ * @param iterations Number of iterations -
+ * with more iterations it is more likely the layout has converged into a static equilibrium.
  */
-function ForceDirectedVertexLayout(width, height, iterations)
+function ForceDirectedVertexLayout(width, height, iterations, randomize)
 {
   this.width = width;
   this.height = height;
   this.iterations = iterations;
+  this.randomize = randomize;
 }
 
 /**
@@ -148,69 +151,78 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
   centers = this.__identifyComponents(graph);
   
   // Assign initial random positions
-  randomLayout = new RandomVertexLayout(this.width, this.height);
-  randomLayout.layout(graph);
+  if(this.randomize) {
+    randomLayout = new RandomVertexLayout(this.width, this.height);
+    randomLayout.layout(graph);
+  }
   
   // Run through some iterations
   for (var i = 0; i < this.iterations; i++) {
+    
     /* Calculate repulsive forces. */
     var v = graph.firstVertex();
     while (v != null) {
+      
       v.dx = 0;
       v.dy = 0;
-      var u = graph.firstVertex();
-      while (u != null) {
-        if (v != u) {
-          /* Difference vector between the two vertices. */
-          var difx = v.x - u.x;
-          var dify = v.y - u.y;
+      // Do not move fixed vertices
+      if(!v.fixed) {
+        var u = graph.firstVertex();
+        while (u != null) {
+          if (v != u && !u.fixed) {
+            /* Difference vector between the two vertices. */
+            var difx = v.x - u.x;
+            var dify = v.y - u.y;
+            
+            /* Length of the dif vector. */
+            var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
+            var force = Fr(d);
+            v.dx = v.dx + (difx/d) * force;
+            v.dy = v.dy + (dify/d) * force;
+          }
           
-          /* Length of the dif vector. */
-          var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
-          var force = Fr(d);
-          v.dx = v.dx + (difx/d) * force;
-          v.dy = v.dy + (dify/d) * force;
+          u = graph.nextVertex(u);
         }
+        /* Treat the walls as static objects emiting force Fw. */
+        // Calculate the sum of "wall" forces in (v.x, v.y)
+        var x = Math.max(eps, v.x);
+        var y = Math.max(eps, v.y);
+        var wx = Math.max(eps, this.width - v.x);
+        var wy = Math.max(eps, this.height - v.y);   // Gotta love all those NaN's :)
+        var Rx = Fw(x) - Fw(wx);
+        var Ry = Fw(y) - Fw(wy);
         
-        u = graph.nextVertex(u);
+        v.dx = v.dx + Rx;
+        v.dy = v.dy + Ry;
       }
-      /* Treat the walls as static objects emiting force Fw. */
-      // Calculate the sum of "wall" forces in (v.x, v.y)
-      var x = Math.max(eps, v.x);
-      var y = Math.max(eps, v.y);
-      var wx = Math.max(eps, this.width - v.x);
-      var wy = Math.max(eps, this.height - v.y);   // Gotta love all those NaN's :)
-      var Rx = Fw(x) - Fw(wx);
-      var Ry = Fw(y) - Fw(wy);
-      
-      v.dx = v.dx + Rx;
-      v.dy = v.dy + Ry;
-      
       v = graph.nextVertex(v);
     }
     
     /* Calculate attractive forces. */
     v = graph.firstVertex();
     while (v != null) {
-      var e = graph.firstEdge(v);
-      while (e != null) {
-        var u = e.endVertex;
-        var difx = v.x - u.x;
-        var dify = v.y - u.y;
-        var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
-        var force = Fa(d);
-        
-        /* Length of the dif vector. */
-        var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
-        v.dx = v.dx - (difx/d) * force;
-        v.dy = v.dy - (dify/d) * force;
-        
-        u.dx = u.dx + (difx/d) * force;
-        u.dy = u.dy + (dify/d) * force;
-        
-        e = graph.nextEdge(e);
-      }
       
+      // Do not move fixed vertices
+      if(!v.fixed) {
+        var e = graph.firstEdge(v);
+        while (e != null) {
+          var u = e.endVertex;
+          var difx = v.x - u.x;
+          var dify = v.y - u.y;
+          var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
+          var force = Fa(d);
+          
+          /* Length of the dif vector. */
+          var d = Math.max(eps, Math.sqrt(difx*difx + dify*dify));
+          v.dx = v.dx - (difx/d) * force;
+          v.dy = v.dy - (dify/d) * force;
+          
+          u.dx = u.dx + (difx/d) * force;
+          u.dy = u.dy + (dify/d) * force;
+          
+          e = graph.nextEdge(e);
+        }
+      }
       v = graph.nextVertex(v);
     }
     
@@ -218,30 +230,31 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         and prevent from being displaced outside frame.     */
     var v = graph.firstVertex();
     while (v != null) {
-      /* Length of the displacement vector. */
-      var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
-  
-      /* Limit to the temperature t. */
-      v.x = v.x + (v.dx/d) * Math.min(d, t);
-      v.y = v.y + (v.dy/d) * Math.min(d, t);
-      
-      /* Stay inside the frame. */
-      borderWidth = this.width / 50;
-      if (v.x < borderWidth) {
-        v.x = borderWidth; 
-      } else if (v.x > this.width - borderWidth) {
-        v.x = this.width - borderWidth;
+      if(!v.fixed) {
+        /* Length of the displacement vector. */
+        var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
+    
+        /* Limit to the temperature t. */
+        v.x = v.x + (v.dx/d) * Math.min(d, t);
+        v.y = v.y + (v.dy/d) * Math.min(d, t);
+        
+        /* Stay inside the frame. */
+        borderWidth = this.width / 50;
+        if (v.x < borderWidth) {
+          v.x = borderWidth; 
+        } else if (v.x > this.width - borderWidth) {
+          v.x = this.width - borderWidth;
+        }
+        
+        if (v.y < borderWidth) {
+          v.y = borderWidth; 
+        } else if (v.y > this.height - borderWidth) {
+          v.y = this.height - borderWidth;
+        }
+        
+        v.x = Math.round(v.x);
+        v.y = Math.round(v.y);
       }
-      
-      if (v.y < borderWidth) {
-        v.y = borderWidth; 
-      } else if (v.y > this.height - borderWidth) {
-        v.y = this.height - borderWidth;
-      }
-      
-      v.x = Math.round(v.x);
-      v.y = Math.round(v.y);
-      
       v = graph.nextVertex(v);
     }
     
