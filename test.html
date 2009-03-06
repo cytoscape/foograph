@@ -12,6 +12,7 @@
 <script type="text/javascript" src="lib/vlayouts/circular.js"></script>
 <script type="text/javascript" src="lib/vlayouts/forcedirected.js"></script>
 <script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
+<script type="text/javascript" src="lib/vlayouts/curvilinearFR.js"></script>
 
 <script type="text/javascript">
 <!--
@@ -39,6 +40,7 @@ Lo and behold!<br>
   <option>Circular</option>
   <option>Fruchterman-Reingold</option>
   <option>Rooted Tree</option>
+  <option>Curvilinear F-R</option>
 </select>
 <div id="report" style="position:relative"></div><br>
 <div id="canvas" style="position:relative;height:800px;width:800px;"></div>
@@ -104,6 +106,11 @@ function paint()
       vertexLayoutManager = new RootedTreeVertexLayout(width, height);
       break;
     }
+    case 4: {
+      // Curvilinear
+      vertexLayoutManager = new CurvilinearFRVertexLayout(width, height, 400);
+      break;
+    }
   }
 
   // When the above switch fails, we fallback to random layout
@@ -113,6 +120,7 @@ function paint()
   var start = new Date();
   // Do vertex layout
   vertexLayoutManager.layout(g);
+  
   var end = new Date();
   
   var duration = end.valueOf() - start.valueOf();
