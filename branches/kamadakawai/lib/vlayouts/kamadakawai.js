@@ -58,6 +58,21 @@ KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(graph, 
         b.weight = w;
       }
       e = graph.nextEdge(e);
+      
+    for (var i = 0; i<a.reverseEdges; i++)
+    {
+      
+    }  
+    while (e != null) {
+      var b = e.endVertex;
+      var w = a.weight + e.weight;
+      if (b.weight == -1) {        
+        b.weight = w;
+        queue.push(b);
+      } else if (b.weight > w) {
+        b.weight = w;
+      }
+      e = graph.nextEdge(e);
     }
     queue.sort(sortVertex);
     alert(" [" + queue + "] (" + queue.length + ")");  
