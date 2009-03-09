@@ -13,6 +13,7 @@
 <script type="text/javascript" src="lib/vlayouts/forcedirected.js"></script>
 <script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
 <script type="text/javascript" src="lib/vlayouts/curvilinearFR.js"></script>
+<script type="text/javascript" src="lib/vlayouts/kamadakawai.js"></script>
 
 <!-- Edge layouts manager -->
 <script type="text/javascript" src="lib/elayouts/curvilinear.js"></script>
@@ -44,6 +45,7 @@ Lo and behold!<br>
   <option>Fruchterman-Reingold</option>
   <option>Rooted Tree</option>
   <option>Curvilinear F-R</option>
+  <option>Kamada-Kawai</option>
 </select>
 <select id="edgeLayout" onchange="applyEdgeLayout()">
   <option>Choose an edge layout to apply</option>
@@ -116,6 +118,11 @@ function paint()
     case 4: {
       // Curvilinear
       vertexLayoutManager = new CurvilinearFRVertexLayout(width, height, 400, true);
+      break;
+    }
+    case 5: {
+      // KamadaKawai
+      vertexLayoutManager = new KamadaKawaiVertexLayout(width, height);
       break;
     }
   }
