@@ -1,0 +1,195 @@
+<html>
+<title>Testing grounds.</title>
+<head>
+<!-- Canvas drawing library -->
+<script type="text/javascript" src="wz_jsgraphics.js"></script>
+
+<!-- General graph objects -->
+<script type="text/javascript" src="lib/graph.js"></script>
+
+<!-- Vertex layouts manager -->
+<script type="text/javascript" src="lib/vlayouts/random.js"></script>
+<script type="text/javascript" src="lib/vlayouts/circular.js"></script>
+<script type="text/javascript" src="lib/vlayouts/forcedirected.js"></script>
+<script type="text/javascript" src="lib/vlayouts/rootedtree.js"></script>
+<script type="text/javascript" src="lib/vlayouts/curvilinearFR.js"></script>
+<script type="text/javascript" src="lib/vlayouts/kamadakawai.js"></script>
+
+<!-- Edge layouts manager -->
+<script type="text/javascript" src="lib/elayouts/curvilinear.js"></script>
+
+<script type="text/javascript">
+<!--
+/* Registerig graph adds it to GraphPool list and to the select box */
+var GraphPool = new Array();
+
+function registerGraph(g)
+{
+  var graphSelect = document.getElementById("graph");
+  var i = GraphPool.length;
+  GraphPool[i] =  g;
+  graphSelect.options[i+1]=new Option(g.label, i);
+}
+//-->
+</script>
+</head>
+<body>
+Lo and behold!<br>
+<select id="graph" onchange="paint()">
+  <option>Select graph</option>
+</select>
+<select id="algo" onchange="paint()">
+  <option>Select algorithm</option>
+  <option>Random</option>
+  <option>Circular</option>
+  <option>Fruchterman-Reingold</option>
+  <option>Rooted Tree</option>
+  <option>Curvilinear F-R</option>
+  <option>Kamada-Kawai</option>
+</select>
+<select id="edgeLayout" onchange="applyEdgeLayout()">
+  <option>Choose an edge layout to apply</option>
+  <option>Curvilinear method</option>
+</select>
+<div id="report" style="position:relative"></div><br>
+<div id="canvas" style="position:relative;height:800px;width:800px;"></div>
+
+<script type="text/javascript" src="samples/famrel.js"></script>
+<script type="text/javascript" src="samples/programprofile.js"></script>
+<script type="text/javascript" src="samples/full.js"></script>
+<script type="text/javascript" src="samples/simple.js"></script>
+<script type="text/javascript" src="samples/tree.js"></script>
+<script type="text/javascript" src="samples/worlddynamics.js"></script>
+<script type="text/javascript" src="samples/100nodes.js"></script>
+
+<script type="text/javascript">
+<!--
+
+var canvas = new jsGraphics("canvas");
+  
+// FIXME
+width = 800;
+height = 800;
+
+function paint() 
+{
+  var algoSelection = document.getElementById("algo").selectedIndex - 1;
+  var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  
+  /* Select Graph */
+  var g
+  switch (true) {
+    case graphSelection > 0:
+      g = GraphPool[graphSelection];
+      break;
+    case GraphPool.length > 0:
+      g = GraphPool[0];
+      break;
+    case true:
+      alert('No graph is loaded');
+      return;
+  }
+  
+  var vertexLayoutManager = null;
+  
+  canvas.clear();
+ 
+  switch (algoSelection) {
+    case 0: {
+      // Randomly layout the vertices
+      vertexLayoutManager = new RandomVertexLayout(width, height);
+      break;
+    }
+    case 1: {
+      // Layout the vertices evenly on a circle
+      vertexLayoutManager = new CircularVertexLayout(width, height);
+      break;
+    }
+    case 2: {
+      // Fruchterman-Reingold algorithm
+      vertexLayoutManager = new ForceDirectedVertexLayout(width, height, 400, true);
+      break;
+    }
+    case 3: {
+      // Hierarchycal layout
+      vertexLayoutManager = new RootedTreeVertexLayout(width, height);
+      break;
+    }
+    case 4: {
+      // Curvilinear
+      vertexLayoutManager = new CurvilinearFRVertexLayout(width, height, 400, true);
+      break;
+    }
+    case 5: {
+      // KamadaKawai
+      vertexLayoutManager = new KamadaKawaiVertexLayout(width, height);
+      break;
+    }
+  }
+
+  // When the above switch fails, we fallback to random layout
+  if (!vertexLayoutManager)
+    vertexLayoutManager = new RandomVertexLayout(width, height);
+  
+  var start = new Date();
+  // Do vertex layout
+  vertexLayoutManager.layout(g);
+  
+  var end = new Date();
+  
+  var duration = end.valueOf() - start.valueOf();
+  var report = document.getElementById("report");
+  report.innerHTML = "Layouting took: "+duration/1000+"s<br>";   // Output layouting time
+  
+  start = new Date();
+  // Plot graph  to canvas
+  g.plot(canvas);
+  
+  // Display plotted graph
+  canvas.paint();
+  end = new Date();
+  
+  duration = end.valueOf() - start.valueOf();
+  report.innerHTML += "Rendering took: "+duration/1000+"s<br>";   // Output rendering time
+}
+
+/* Applies an edge layout. Obviously. */
+function applyEdgeLayout()
+{
+  var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  var edgeLayoutSelection = document.getElementById("edgeLayout").selectedIndex - 1;
+  
+  /* Select Graph */
+  var g
+  switch (true) {
+    case graphSelection > 0:
+      g = GraphPool[graphSelection];
+      break;
+    case GraphPool.length > 0:
+      g = GraphPool[0];
+      break;
+    case true:
+      alert('No graph is loaded');
+      return;
+  }
+  
+  switch (edgeLayoutSelection) {
+    case 0: {
+      // Layout edges
+      edgeLayoutManager = new CurvilinearEdgeLayout(width, height, 1000);
+      break;
+    }
+  }
+  
+  canvas.clear();
+  edgeLayoutManager.layout(g);
+  
+  g.plot(canvas);
+  
+  // Display plotted graph
+  canvas.paint();
+}
+//-->
+</script> 
+</body>
+</html>
