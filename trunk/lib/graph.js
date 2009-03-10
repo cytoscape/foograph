@@ -1,80 +1,11 @@
 /**
- * Return next vertex in list.
- *
- * @param vertex
- * @return Next vertex in list
- */
-function nextVertex(vertex)
-{
-  return vertex.next;
-}
-
-/**
- * Return previous vertex in list.
- *
- * @param vertex
- * @return Previous vertex in list
- */
-function prevVertex(vertex)
-{
-  return vertex.prev;
-}
-
-
-/**
- * Return the starting vertex of this graph.
- *
- * @return This graph's first vertex in its vertex list
- */
-function firstVertex()
-{
-  return this.startVertex;
-}
-
-/**
- * Get the first edge of vertex's neighbour list.
- *
- * @param vertex A valid Vertex instance
- */
-function firstEdge(vertex)
-{
-  return vertex.firstEdge;
-}
-
-/**
- * Return next edge in list.
- *
- * @param edge
- * @return Next edge in list
- */
-function nextEdge(edge)
-{
-  return edge.next;
-}
-
-/**
- * Return previous edge in list.
- *
- * @param edge
- * @return Next edge in list
- */
-function prevEdge(edge)
-{
-  return edge.prev;
-}
-
-/**
  * Insert a vertex into this graph.
  * 
  * @param vertex A valid Vertex instance
  */
 function insertVertex(vertex)
 {
-  /* Insert at the beginning. */
-  vertex.next = this.startVertex;
-  if(this.startVertex != null)
-    this.startVertex.prev = vertex;
-  this.startVertex = vertex;
+  this.vertices.push(vertex);
   this.vertexCount++;
 }
 
@@ -87,40 +18,15 @@ function insertVertex(vertex)
  * @param vertex2 Ending Vertex instance
  * @return Newly created Edge instance
  */
-function insertEdge(label, weight, vertex1, vertex2)
+function insertEdge(label, weight, vertex1, vertex2, style)
 {
-  /* Put at the beginning of vertex1's neighbour list. */
-  next = this.firstEdge(vertex1);
-  newEdge = new Edge(label, next, weight, vertex2);
-  if(next != null) 
-    next.prev = newEdge;
-  newEdge.prev = null;
+  var e1 = new Edge(label, weight, vertex2, style);
+  var e2 = new Edge(null, weight, vertex1, null);
   
-  vertex1.firstEdge = newEdge;
+  vertex1.edges.push(e1);
+  vertex2.reverseEdges.push(e2)
   
-  /* Create a reverse mapping */
-  if (!vertex2.reverseEdges)
-    vertex2.reverseEdges = new Array();
-  
-  vertex2.reverseEdges.push(vertex1);
-  return newEdge;
-    
-}
-
-/**
- * Insert an instantiated edge of a vertex.
- *
- * @param vertex Starting vertex
- * @param edge Edge instance
- */
-function insertEdgeObj(vertex, edge)
-{
-  var first = this.firstEdge(vertex);
-  if(first != null)
-    first.prev = edge;
-  edge.next = first;
-  edge.prev = null;
-  vertex.firstEdge = edge;
+  return e1;
 }
 
 /** 
@@ -129,19 +35,20 @@ function insertEdgeObj(vertex, edge)
  * @param vertex Starting vertex
  * @param edge Edge to remove
  */
- function removeEdge(vertex, edge) 
+ function removeEdge(vertex1, vertex2) 
  {
-  // Forward reference update
-  if(this.prevEdge(edge) != null) {
-    this.prevEdge(edge).next = this.nextEdge(edge);
+  for (var i = vertex1.edges.length - 1; i >= 0; i--) {
+    if (vertex1.edges[i].endVertex == vertex2) {
+      vertex1.edges.splice(i,1);
+      break;
+    }
   }
-  else {
-    vertex.firstEdge = this.nextEdge(edge);
-  }
-
-  // Back reference update
-  if(this.nextEdge(edge) != null) {
-    this.nextEdge(edge).prev = this.prevEdge(edge);
+  
+  for (var i = vertex2.reverseEdges.length - 1; i >= 0; i--) {
+    if (vertex2.reverseEdges[i].endVertex == vertex1) {
+      vertex2.edges.splice(i,1);
+      break;
+    }
   }
  }
 
@@ -152,17 +59,21 @@ function insertEdgeObj(vertex, edge)
  */
  function removeVertex(vertex) 
  {
-  // Forward reference update
-  if(this.prevVertex(vertex) != null) {
-    this.prevVertex(vertex).next = this.nextVertex(vertex);
+  for (var i = vertex.edges.length - 1; i >= 0; i-- ) {
+    this.removeEdge(vertex, vertex.edges[i].endVertex);
   }
-  else {
-    this.startVertex = this.nextVertex(vertex);
+  
+  for (var i = vertex.reverseEdges.length - 1; i >= 0; i-- ) {
+    this.removeEdge(vertex.reverseEdges[i].endVertex, vertex);
   }
-  // Back reference update
-  if(this.nextVertex(vertex) != null) {
-    his.nextVertex(vertex).prev = this.prevVertex(vertex);
+  
+  for (var i = this.vertices.length - 1; i >= 0; i-- ) {
+    if (this.vertices[i] == vertex) {
+      this.vertices.splice(i,1);
+      break;
+    }
   }
+  
   this.vertexCount--;
  }
  
@@ -172,33 +83,27 @@ function insertEdgeObj(vertex, edge)
  * @param canvas A proper canvas instance
  */
 function plot(canvas)
-{	
+{
   /* Draw edges first */
-  var v = this.firstVertex();
-  while (v != null) {
-      
+  for (i = 0; i < this.vertices.length; i++) {
+    var v = this.vertices[i];
     if (!v.hidden) {
-      e = this.firstEdge(v);
-      while(e != null) {
+      for (var j = 0; j < v.edges.length; j++) {
+        var e = v.edges[j];
         /* Draw edge (if not hidden) */
         if (!e.hidden)
           e.draw(canvas, v);
-  
-        e = this.nextEdge(e);
       }
     }
-    v = this.nextVertex(v);
   }
   
   /* Draw the vertices. */
-  v = this.firstVertex();
-  while (v != null) {
+  for (i = 0; i < this.vertices.length; i++) {
+    v = this.vertices[i];
   
     /* Draw vertex (if not hidden) */
     if (!v.hidden)
       v.draw(canvas);
-    
-    v = this.nextVertex(v);
   }
 }
 
@@ -212,21 +117,14 @@ function Graph(label, directed)
 {
   /* Fields. */
   this.label = label;
-  this.startVertex = null;
+  this.vertices = new Array();
   this.directed = directed;
   this.vertexCount = 0;
   
   /* Graph methods. */
-  this.nextVertex = nextVertex;
-  this.prevVertex = prevVertex;
-  this.firstVertex = firstVertex;
-  this.firstEdge = firstEdge;
-  this.nextEdge = nextEdge;
-  this.prevEdge = prevEdge;
   this.insertVertex = insertVertex;
   this.removeVertex = removeVertex;
   this.insertEdge = insertEdge;
-  this.insertEdgeObj = insertEdgeObj;
   this.removeEdge = removeEdge;
   this.plot = plot;
 }
@@ -238,12 +136,11 @@ function Graph(label, directed)
  * @param next Reference to the next vertex of this graph
  * @param firstEdge First edge of a linked list of edges
  */
-function Vertex(label, next, firstEdge, x, y, style)
+function Vertex(label, x, y, style)
 {
   this.label = label;
-  this.next = next;
-  this.prev = null;
-  this.firstEdge = firstEdge;
+  this.edges = new Array();
+  this.reverseEdges = new Array();
   this.x = x;
   this.y = y;
   this.dx = 0;
@@ -253,7 +150,7 @@ function Vertex(label, next, firstEdge, x, y, style)
   this.hidden = false;
   this.fixed = false;     // Fixed vertices are static (unmovable)
   
-  if(style != null) {    
+  if(style != null) {
       this.style = style;
   }
   else { // Default
@@ -265,7 +162,14 @@ function Vertex(label, next, firstEdge, x, y, style)
  * toString overload for easier debugging
  */
  Vertex.prototype.toString = function() {
-    return this.label;
+    return "[v:" + this.label + "] ";
+}
+
+/**
+ * toString overload for easier debugging
+ */
+ Edge.prototype.toString = function() {
+    return "[e:" + this.endVertex.label + "] ";
 }
 
 /**
@@ -328,14 +232,12 @@ function VertexStyle(shape, width, height, fillColor, borderColor, showLabel)
  * @param weight Edge weight
  * @param endVertex Destination Vertex instance
  */
-function Edge(label, next, weight, endVertex, style)
+function Edge(label, weight, endVertex, style)
 {
   this.label = label;
-  this.next = next;
-  this.prev = -1;
   this.weight = weight;
   this.endVertex = endVertex;
-  this.style = style;
+  this.style = null;
   this.hidden = false;
     
   // Curving information
