@@ -1,10 +1,10 @@
 var g = new Graph("K5", true);
 
-var v1 = new Vertex("1", null, null, -1, -1);
-var v2 = new Vertex("2", null, null, -1, -1);
-var v3 = new Vertex("3", null, null, -1, -1);
-var v4 = new Vertex("4", null, null, -1, -1);
-var v5 = new Vertex("5", null, null, -1, -1);
+var v1 = new Vertex("1", -1, -1);
+var v2 = new Vertex("2", -1, -1);
+var v3 = new Vertex("3", -1, -1);
+var v4 = new Vertex("4", -1, -1);
+var v5 = new Vertex("5", -1, -1);
 
 g.insertVertex(v1);
 g.insertVertex(v2);

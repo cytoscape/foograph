@@ -30,6 +30,33 @@ function registerGraph(g)
   GraphPool[i] =  g;
   graphSelect.options[i+1]=new Option(g.label, i);
 }
+
+function dumpGraph() {
+  var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  var g
+  switch (true) {
+    case graphSelection > 0:
+      g = GraphPool[graphSelection];
+      break;
+    case GraphPool.length > 0:
+      g = GraphPool[0];
+      break;
+    case true:
+      alert('No graph is loaded');
+      return;
+  }
+  
+  var report = document.getElementById("report");
+  var txt = g.label + "<table>";
+  for(var i1 in g.vertices) {
+    txt += "<tr><td>" + g.vertices[i1].label + "</td><td></td></tr>";
+    for (var i2 in g.vertices[i1].edges) {
+      txt += "<tr><td>" + g.vertices[i1].label + "</td><td>" + g.vertices[i1].edges[i2].endVertex.label + "</td></tr>";
+    }
+  }
+  txt += "</table>";
+  report.innerHTML = txt;
+}
 //-->
 </script>
 </head>
@@ -51,6 +78,7 @@ Lo and behold!<br>
   <option>Choose an edge layout to apply</option>
   <option>Curvilinear method</option>
 </select>
+<input type="button" onclick="dumpGraph()" />
 <div id="report" style="position:relative"></div><br>
 <div id="canvas" style="position:relative;height:800px;width:800px;"></div>
 

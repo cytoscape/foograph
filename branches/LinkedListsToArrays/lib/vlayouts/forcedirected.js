@@ -41,7 +41,7 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
   {
     var stack = new Array();
     var component = new Array();
-    var centerVertex = new Vertex("component_center", null, null, -1, -1);
+    var centerVertex = new Vertex("component_center", -1, -1);
     centerVertex.hidden = true;
     componentCenters.push(centerVertex);
     components.push(component);
@@ -51,19 +51,15 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
       component.push(v);
       v.__dfsVisited = true;
       
-      e = graph.firstEdge(v);
-      while (e != null) {
+      for (var i in v.edges) {
+        var e = v.edges[i];
         if (!e.hidden)
           stack.push(e.endVertex);
-        
-        e = graph.nextEdge(e);
       }
       
-      if (v.reverseEdges) {
-        for (var i in v.reverseEdges) {
-          if (!v.reverseEdges[i].hidden)
-            stack.push(v.reverseEdges[i]);
-        }
+      for (var i in v.reverseEdges) {
+        if (!v.reverseEdges[i].hidden)
+          stack.push(v.reverseEdges[i].endVertex);
       }
     }
     
@@ -78,20 +74,17 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
   }
   
   // Clear DFS visited flag
-  v = graph.firstVertex();
-  while (v != null) {
+  for (var i in graph.vertices) {
+    var v = graph.vertices[i];
     v.__dfsVisited = false;
-    v = graph.nextVertex(v);
   }
   
   // Iterate through all vertices starting DFS from each vertex
   // that hasn't been visited yet.
-  v = graph.firstVertex();
-  while (v != null) {
+  for (var k in graph.vertices) {
+    var v = graph.vertices[k];
     if (!v.__dfsVisited && !v.hidden)
       dfs(v);
-    
-    v = graph.nextVertex(v);
   }
   
   // Interconnect all center vertices
@@ -99,7 +92,6 @@ ForceDirectedVertexLayout.prototype.__identifyComponents = function(graph)
     for (var i in componentCenters) {
       graph.insertVertex(componentCenters[i]);
     }
-    
     for (var i in components) {
       for (var j in components[i]) {
         // Connect visited vertex to "central" component vertex
@@ -157,18 +149,18 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
   }
   
   // Run through some iterations
-  for (var i = 0; i < this.iterations; i++) {
+  for (var q = 0; q < this.iterations; q++) {
     
     /* Calculate repulsive forces. */
-    var v = graph.firstVertex();
-    while (v != null) {
+    for (var i1 in graph.vertices) {
+      var v = graph.vertices[i1];
       
       v.dx = 0;
       v.dy = 0;
       // Do not move fixed vertices
       if(!v.fixed) {
-        var u = graph.firstVertex();
-        while (u != null) {
+        for (var i2 in graph.vertices) {
+          var u = graph.vertices[i2];
           if (v != u && !u.fixed) {
             /* Difference vector between the two vertices. */
             var difx = v.x - u.x;
@@ -180,8 +172,6 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
             v.dx = v.dx + (difx/d) * force;
             v.dy = v.dy + (dify/d) * force;
           }
-          
-          u = graph.nextVertex(u);
         }
         /* Treat the walls as static objects emiting force Fw. */
         // Calculate the sum of "wall" forces in (v.x, v.y)
@@ -195,17 +185,16 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         v.dx = v.dx + Rx;
         v.dy = v.dy + Ry;
       }
-      v = graph.nextVertex(v);
     }
     
     /* Calculate attractive forces. */
-    v = graph.firstVertex();
-    while (v != null) {
+    for (var i3 in graph.vertices) {
+      var v = graph.vertices[i3];
       
       // Do not move fixed vertices
       if(!v.fixed) {
-        var e = graph.firstEdge(v);
-        while (e != null) {
+        for (var i4 in v.edges) {
+          var e = v.edges[i4];
           var u = e.endVertex;
           var difx = v.x - u.x;
           var dify = v.y - u.y;
@@ -219,17 +208,14 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
           
           u.dx = u.dx + (difx/d) * force;
           u.dy = u.dy + (dify/d) * force;
-          
-          e = graph.nextEdge(e);
         }
       }
-      v = graph.nextVertex(v);
     }
     
     /* Limit the maximum displacement to the temperature t
         and prevent from being displaced outside frame.     */
-    var v = graph.firstVertex();
-    while (v != null) {
+    for (var i5 in graph.vertices) {
+      var v = graph.vertices[i5];
       if(!v.fixed) {
         /* Length of the displacement vector. */
         var d = Math.max(eps, Math.sqrt(v.dx*v.dx + v.dy*v.dy));
@@ -255,7 +241,6 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         v.x = Math.round(v.x);
         v.y = Math.round(v.y);
       }
-      v = graph.nextVertex(v);
     }
     
     /* Cool. */

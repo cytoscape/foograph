@@ -23,10 +23,9 @@ function RandomVertexLayout(width, height)
  */
 RandomVertexLayout.prototype.layout = function(graph)
 {
-  v = graph.firstVertex();
-  while (v != null) {
+  for (var i = 0; i<graph.vertices.length; i++) {
+    var v = graph.vertices[i];
     v.x = Math.round(Math.random() * this.width);
     v.y = Math.round(Math.random() * this.height);
-    v = graph.nextVertex(v);
   }
 }
