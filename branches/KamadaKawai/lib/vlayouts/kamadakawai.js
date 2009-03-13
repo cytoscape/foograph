@@ -14,6 +14,7 @@ function KamadaKawaiVertexLayout(width, height)
 {
   this.width = width;
   this.height = height;
+  this.spring_constant = 1;
 }
 
 function sortVertex(v1, v2)
@@ -136,7 +137,16 @@ KamadaKawaiVertexLayout.prototype.__computePartialDerivates = function(m)
   return result;
 }
 
-this.spring_constant = 1;
+KamadaKawaiVertexLayout.prototype.__done = function(vertex, global)
+{
+  if (global) {
+    //repeat until delta is 0 or energy change falls bellow tolerance
+  } else {
+   //repeat until delta is 0 or energy change falls bellow tolerance
+  }
+}
+
+
 
 /**
  * Calculates the coordinates based on Kamada-Kawai spring
@@ -177,9 +187,10 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   
   var delta_p = 0;
   var p = 0;
-  
+  var partial_derivates = new Array();
   for (var i3 in this.graph.vertices) {
     var deriv = this.__computePartialDerivates(i3);
+    partial_derivates[i3] = deriv;
     
     delta = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);
     if (delta > delta_p) {
@@ -188,7 +199,48 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
     }    
   }
   
-  
+  while (!done) {
+    var p_partials = new Array();
+    for (i4 in graph.vertices) {
+      this.__calculatePartialDerivates(p, i);
+    }
+    
+    do {
+      var dE_dx_dx = 0, dE_dx_dy = 0, dE_dy_dx = 0, dE_dy_dy = 0;
+      for (i5 in graph.vertices) {
+        if (i5 != p) {
+          var dx = graph.vertices[p].x - graph.vertices[i5].x;
+          var dy = graph.vertices[p].y - graph.vertices[i5].y;
+          var dist = Math.sqrt(dx*dx+dy*dy);
+          var dist_cubed = dist*dist*dist;
+          var k_mi = this.spring_strength[p][i5];
+          var l_mi = this.distance[p][i5];
+          dE_dx_dx += k_mi * (1 - (l_mi * dy * dy) / dist_cubed);
+          dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed);
+          dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed);
+          dE_dx_dx += k_mi * (1 - (l_mi * dx * dx) / dist_cubed);
+        }
+      }
+    
+      var dE_dx = partial_derivates[p].first;
+      var dE_dy = partial_derivates[p].second;
+      
+      var dx = (dE_dx_dy * dE_dy - dE_dy_dy * dE_dx)
+                / (dE_dx_dx * dE_dy_dy - dE_dx_dy * dE_dy_dx);
+      var dy = (dE_dx_dx * dE_dy - dE_dy_dx * dE_dx)
+                / (dE_dy_dx * dE_dx_dy - dE_dx_dx * dE_dy_dy);
+      graph.vertices[p].x += dx;
+      graph.vertices[p].y += dy;
+      
+      deriv = this.__computePartialDerivates(p);
+      partial_derivates[p] = deriv;
+      
+      delta_p = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);
+    } while(!done);
+    
+    var old_p = p;
+    
+  }
   
   
   
