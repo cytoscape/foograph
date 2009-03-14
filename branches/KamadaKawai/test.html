@@ -80,10 +80,11 @@ Lo and behold!<br>
 </select>
 <input type="button" onclick="dumpGraph()" />
 <div id="report" style="position:relative"></div><br>
-<div id="canvas" style="position:relative;height:800px;width:800px;"></div>
+<div id="canvas" style="position:relative;height:800px;width:800px;border:10px solid black;"></div>
 
 <script type="text/javascript" src="samples/tree.js"></script>
 <script type="text/javascript" src="samples/famrel.js"></script>
+<script type="text/javascript" src="samples/famrel1.js"></script>
 <script type="text/javascript" src="samples/programprofile.js"></script>
 <script type="text/javascript" src="samples/full.js"></script>
 <script type="text/javascript" src="samples/simple.js"></script>
@@ -161,6 +162,7 @@ function paint()
   
   var start = new Date();
   // Do vertex layout
+  vertexLayoutManager.canvas = canvas;
   vertexLayoutManager.layout(g);
   
   var end = new Date();

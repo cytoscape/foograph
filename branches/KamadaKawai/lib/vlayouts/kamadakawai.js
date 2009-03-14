@@ -15,9 +15,15 @@ function KamadaKawaiVertexLayout(width, height)
   this.width = width;
   this.height = height;
   this.spring_constant = 1;
-  this.tolerance = 0.09;
+  this.tolerance = 0.001;
 }
 
+/**
+ * Compares two vertices
+ *
+ * @param v1 First vertex
+ * @param v1 Second vertex
+ */
 function sortVertex(v1, v2)
 {
   return v2.weight - v1.weight;
@@ -30,11 +36,13 @@ function sortVertex(v1, v2)
  * @param graph A valid graph instance
  * @param vertex A valid vertex instance
  */
-KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(graph, vertex)
+KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(vertex)
 {
+  //TODO: implement queue as binary queue
+  
   //reset all node weights to -1
-  for (var i1 in graph.vertices) {
-    graph.vertices[i1].weight = -1;
+  for (var i1 in this.graph.vertices) {
+    this.graph.vertices[i1].weight = -1;
   }
   
   vertex.weight = 0;
@@ -69,24 +77,22 @@ KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(graph, 
         b.weight = w;
       }
     }
-    
     queue.sort(sortVertex); 
   }
   
   result = new Array();
-  for (i3 in graph.vertices) {
-    var v = graph.vertices[i3]
+  for (i3 in this.graph.vertices) {
+    var v = this.graph.vertices[i3]
     result[i3] = v.weight;
   }
   return result;
 }
 
 /**
- * Calculates the shortest paths from vertex to any other
- * connected vertex
+ * Calculate the length of the edge so graph fits 
+ * into the drawing area
  *  
- * @param graph A valid graph instance
- * @param vertex A valid vertex instance
+ * @param side graph area side length
  */
 KamadaKawaiVertexLayout.prototype.__computeEdgeLength = function(side)
 {
@@ -101,7 +107,13 @@ KamadaKawaiVertexLayout.prototype.__computeEdgeLength = function(side)
 
 }
 
-//compute contribution of vertex i to the first partial derivates (dE/dx_m, de/dy_m) (for vertex m)
+/**
+ * compute contribution of vertex i to the first partial derivates
+ * (dE/dx_m, de/dy_m) (for vertex m)
+ *
+ * @param m Vertex index
+ * @param i Vertex index 
+ */
 KamadaKawaiVertexLayout.prototype.__computePartialDerivate = function(m, i)
 {
   var result = new function(){};;
@@ -114,29 +126,18 @@ KamadaKawaiVertexLayout.prototype.__computePartialDerivate = function(m, i)
     var dx = v1.x - v2.x;
     var dy = v1.y - v2.y;
     var dist = Math.sqrt(dx*dx + dy*dy);
-    //alert("m: " + m + "\ni: " + i);
-    //alert("spring_strength: " + this.spring_strength[m][i] + 
-          //"\ndistance: " + this.distance[m][i] + 
-          //"\ndx: " + dx +
-          //"\ndy:" + dy +
-          //"\ndist: " + dist);
-
     result.first = this.spring_strength[m][i]* (dx - this.distance[m][i]*dx/dist);
-    result.second = this.spring_strength[m][i]* (dy - this.distance[m][i]*dx/dist);
-    /*alert("v1: " + v1 +
-          "\nv2: " + v2 + 
-          "\nspring_strength: " + this.spring_strength[m][i] + 
-          "\ndistance: " + this.distance[m][i] + 
-          "\ndx: " + dx +
-          "\ndy:" + dy +
-          "\ndist: " + dist);
-    *///alert("result after: " + result.first + " " + result.second);
+    result.second = this.spring_strength[m][i]* (dy - this.distance[m][i]*dy/dist);
   }
   
   return result;  
 }
 
-
+/**
+ * Compute partial derivatives dE/dx_m and dE/dy_m
+ *
+ * @param m Vertex index
+ */
 KamadaKawaiVertexLayout.prototype.__computePartialDerivates = function(m)
 {
   var result = new function(){};
@@ -148,17 +149,15 @@ KamadaKawaiVertexLayout.prototype.__computePartialDerivates = function(m)
     result.first += deriv.first;
     result.second += deriv.second;
   }
-  /*alert("result: "+result.first+" "+result.second+
-        "\nm: " + m +
-        "\ni1: " + i1 +
-        "\nderiv: " + deriv.first + " " + deriv.second);*/
   return result;
 }
 
 /**
  * Determines when to terminate the layout of the graph
  *
- * @param graph A valid graph instance
+ * @param delta_p
+ * @param p Vertex index 
+ * @param global 
  */
 KamadaKawaiVertexLayout.prototype.__done = function(delta_p, p, global)
 {
@@ -172,25 +171,22 @@ KamadaKawaiVertexLayout.prototype.__done = function(delta_p, p, global)
     var diff = this.last_energy - delta_p;
     if (diff < 0)
       diff = -diff;
-    /*alert("delta_p: " + delta_p + "\ndiff: " + diff);*/
     var done = (delta_p == 0) || (diff/this.last_energy < this.tolerance);
     this.last_energy = delta_p;
     
     return done;
   } else {
-      if (this.last_local_energy == Number.MAX_VALUE) {
+    if (this.last_local_energy == Number.MAX_VALUE) {
       this.last_local_energy = delta_p;
-      return false;
+
+      return delta_p == 0;
     }
     
    //repeat until delta is 0 or energy change falls bellow tolerance    
-    var diff = this.last_local_energy - delta_p;
-    if (diff < 0)
-      diff = -diff;
-    /*alert("delta_p: " + delta_p + "\ndiff: " + diff);          */
+    var diff = this.last_local_energy - delta_p;    
     var done = (delta_p == 0) || (diff/this.last_local_energy < this.tolerance);
     this.last_local_energy = delta_p;
-    
+
     return done;
   }
 }
@@ -210,26 +206,24 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   this.distance = new Array();
   this.last_energy = Number.MAX_VALUE;
   this.last_local_energy = Number.MAX_VALUE;
-  //http://www.boost.org/doc/libs/1_38_0/boost/graph/kamada_kawai_spring_layout.hpp
-  //Create distance matrix
-    //Johnson's algorithm to find shortest paths between all vertices should be implemented
-    //http://en.wikipedia.org/wiki/Johnson's_algorithm
-
-  randomLayout = new RandomVertexLayout(this.width, this.height);
+  
+  randomLayout = new CircularVertexLayout(this.width, this.height);
   randomLayout.layout(graph);
     
-  var txt = "";
+  //http://www.boost.org/doc/libs/1_38_0/boost/graph/kamada_kawai_spring_layout.hpp
+  //Create distance matrix
+  //Johnson's algorithm to find shortest paths between all vertices should be implemented
+  //http://en.wikipedia.org/wiki/Johnson's_algorithm
   for (var i4 in graph.vertices) {
     var v = graph.vertices[i4];
-    this.distance[i4] = this.__djikstraFindShortestPaths(graph, v);
+    this.distance[i4] = this.__djikstraFindShortestPaths(v);
   }
   
   var edge_length = this.__computeEdgeLength(width);
-  
-  
-  
+
   var K = this.spring_constant;
   
+  //Calculate optimal distances and spring strenghts
   for (var i1 in graph.vertices) {
     this.spring_strength[i1] = new Array();
     for (var i2 in graph.vertices) {
@@ -242,6 +236,7 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   var delta_p = 0;
   var p = 0;
   var partial_derivates = new Array();
+  //Compute partial derivates and find max
   for (var i3 in this.graph.vertices) {
     var deriv = this.__computePartialDerivates(i3);
     partial_derivates[i3] = deriv;
@@ -252,14 +247,20 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
       delta_p = delta;
     }    
   }
-  
   while (!this.__done(delta_p, p, true)) {
+    // The contribution p makes to the partial derivatives of
+    // each vertex. Computing this (at O(n) cost) allows us to
+    // update the delta_i values in O(n) time instead of O(n^2)
+    // time.    
     var p_partials = new Array();
     for (i4 in graph.vertices) {
       p_partials[i4] = this.__computePartialDerivate(i4, p);
     }
     
+    this.last_local_energy = Number.MAX_VALUE;
+    var i98 = true;
     do {
+      //Compute Jacobian
       var dE_dx_dx = 0, dE_dx_dy = 0, dE_dy_dx = 0, dE_dy_dy = 0;
       for (i5 in graph.vertices) {
         if (i5 != p) {
@@ -272,22 +273,11 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
           dE_dx_dx += k_mi * (1 - (l_mi * dy * dy) / dist_cubed);
           dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed;
           dE_dy_dx += k_mi * l_mi * dy * dx / dist_cubed;
-          dE_dy_dy += k_mi * (1 - (l_mi * dy * dy) / dist_cubed);          
-          /*alert("p: " + p +
-                "\ni5: " + i5 +
-                "\ndx: " + dx+
-                "\ndy: " + dy +
-                "\ndist: " + dist +
-                "\ndist_cubed " + dist_cubed +
-                "\nk_mi: " + k_mi +
-                "\nl_mi: " + l_mi +
-                "\ndE_dx_dx: " + dE_dx_dx+
-                "\ndE_dx_dy: " + dE_dx_dy+
-                "\ndE_dy_dx: " + dE_dy_dx+
-                "\ndE_dy_dy: " + dE_dy_dy);*/
+          dE_dy_dy += k_mi * (1 - (l_mi * dx * dx) / dist_cubed);          
         }
       }
     
+      //Calculate dx and dy
       var dE_dx = partial_derivates[p].first;
       var dE_dy = partial_derivates[p].second;
       
@@ -295,19 +285,19 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
                 / (dE_dx_dx * dE_dy_dy - dE_dx_dy * dE_dy_dx);
       var dy = (dE_dx_dx * dE_dy - dE_dy_dx * dE_dx)
                 / (dE_dy_dx * dE_dx_dy - dE_dx_dx * dE_dy_dy);
-      /*alert("p: " + p +
-            "\ndx: " + dx +
-            "\ndy: " + dy);*/
+
+      //Move vertex
       graph.vertices[p].x += dx;
       graph.vertices[p].y += dy;
       
+      //Recompute partial derivates and delta_p
       deriv = this.__computePartialDerivates(p);
       partial_derivates[p] = deriv;
-      /*alert("p: " + p +
-            "\nderiv:" + deriv.first + " " + deriv.second);*/
-      delta_p = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);
+      delta_p = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);  
+      i98++;
     } while(!this.__done(delta_p, p, false));
     
+    //Update partial derivates and select new p
     var old_p = p;
     for (var i6 in graph.vertices) {
       var old_deriv_p = p_partials[i6];
@@ -324,6 +314,47 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
         delta_p = delta;
       }
     }
+  }
+
+  //Move and resize graph to fit into the drawing area;
+  var mnx = 10;
+  var mxx = this.width - 100;
+  var mny = 10;
+  var mxy = this.height - 50;
+  var preserveAspect = true;
+  
+  var minx = Number.MAX_VALUE;
+  var miny = Number.MAX_VALUE
+  var maxx = Number.MIN_VALUE;
+  var maxy = Number.MIN_VALUE;
+  
+  for (var i7 in graph.vertices) {
+    var v = graph.vertices[i7];
+    if (v.x < minx)
+      minx = v.x;
+    if (v.y < miny)
+      miny = v.y;
+    if (v.x > maxx)
+      maxx = v.x;
+    if (v.y > maxy)
+      maxy = v.y;
+  }
+  var dx = mnx-minx;
+  var dy = mny-miny;
+  var kx = (mxx-mnx) / (maxx - minx);
+  var ky = (mxy-mny) / (maxy - miny);
+
+  if (preserveAspect) {
+    kx = Math.min(kx, ky);
+    ky = Math.min(kx, ky);
+  }
+  
+  for (var i8 in graph.vertices) {
+    var v = graph.vertices[i8];
+    v.x += dx;
+    v.x *= kx;
+    v.y += dy;
+    v.y *= ky;
   }
   
   return true;
