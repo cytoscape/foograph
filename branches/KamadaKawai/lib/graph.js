@@ -46,7 +46,7 @@ function insertEdge(label, weight, vertex1, vertex2, style)
   
   for (var i = vertex2.reverseEdges.length - 1; i >= 0; i--) {
     if (vertex2.reverseEdges[i].endVertex == vertex1) {
-      vertex2.edges.splice(i,1);
+      vertex2.reverseEdges.splice(i,1);
       break;
     }
   }

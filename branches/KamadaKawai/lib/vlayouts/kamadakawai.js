@@ -19,17 +19,6 @@ function KamadaKawaiVertexLayout(width, height)
 }
 
 /**
- * Compares two vertices
- *
- * @param v1 First vertex
- * @param v1 Second vertex
- */
-function sortVertex(v1, v2)
-{
-  return v2.weight - v1.weight;
-}
-
-/**
  * Calculates the shortest paths from vertex to any other
  * connected vertex
  *  
@@ -39,10 +28,14 @@ function sortVertex(v1, v2)
 KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(vertex)
 {
   //TODO: implement queue as binary queue
+  function sortVertex(v1, v2)
+  {
+    return v2.weight - v1.weight;
+  }
   
   //reset all node weights to -1
   for (var i1 in this.graph.vertices) {
-    this.graph.vertices[i1].weight = -1;
+    this.graph.vertices[i1].weight = -1;   
   }
   
   vertex.weight = 0;
@@ -83,6 +76,9 @@ KamadaKawaiVertexLayout.prototype.__djikstraFindShortestPaths = function(vertex)
   result = new Array();
   for (i3 in this.graph.vertices) {
     var v = this.graph.vertices[i3]
+    //Workaround to plot multiple component graphs
+    if (v.weight == -1)
+      v.weight = 5;
     result[i3] = v.weight;
   }
   return result;
@@ -207,6 +203,16 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   this.last_energy = Number.MAX_VALUE;
   this.last_local_energy = Number.MAX_VALUE;
   
+  /*
+  var master = new Vertex("master", -1, -1);
+  this.graph.insertVertex(master)
+  
+  for (var i1 in graph.vertices)
+    if (graph.vertices[i1] != master)
+      this.graph.insertEdge("", 1, master, graph.vertices[i1]);
+  */
+  
+  
   randomLayout = new CircularVertexLayout(this.width, this.height);
   randomLayout.layout(graph);
     
@@ -315,7 +321,8 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
       }
     }
   }
-
+  //this.graph.removeVertex(master);
+  
   //Move and resize graph to fit into the drawing area;
   var mnx = 10;
   var mxx = this.width - 100;
