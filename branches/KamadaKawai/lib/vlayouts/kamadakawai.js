@@ -15,6 +15,7 @@ function KamadaKawaiVertexLayout(width, height)
   this.width = width;
   this.height = height;
   this.spring_constant = 1;
+  this.tolerance = 0.09;
 }
 
 function sortVertex(v1, v2)
@@ -108,14 +109,28 @@ KamadaKawaiVertexLayout.prototype.__computePartialDerivate = function(m, i)
   result.second = 0;
   
   var v1 = this.graph.vertices[m];
-  var v2 = this.graph.vertices[i];
-  
+  var v2 = this.graph.vertices[i];  
   if (v1 != v2) {
     var dx = v1.x - v2.x;
     var dy = v1.y - v2.y;
     var dist = Math.sqrt(dx*dx + dy*dy);
+    //alert("m: " + m + "\ni: " + i);
+    //alert("spring_strength: " + this.spring_strength[m][i] + 
+          //"\ndistance: " + this.distance[m][i] + 
+          //"\ndx: " + dx +
+          //"\ndy:" + dy +
+          //"\ndist: " + dist);
+
     result.first = this.spring_strength[m][i]* (dx - this.distance[m][i]*dx/dist);
     result.second = this.spring_strength[m][i]* (dy - this.distance[m][i]*dx/dist);
+    /*alert("v1: " + v1 +
+          "\nv2: " + v2 + 
+          "\nspring_strength: " + this.spring_strength[m][i] + 
+          "\ndistance: " + this.distance[m][i] + 
+          "\ndx: " + dx +
+          "\ndy:" + dy +
+          "\ndist: " + dist);
+    *///alert("result after: " + result.first + " " + result.second);
   }
   
   return result;  
@@ -133,16 +148,50 @@ KamadaKawaiVertexLayout.prototype.__computePartialDerivates = function(m)
     result.first += deriv.first;
     result.second += deriv.second;
   }
-  
+  /*alert("result: "+result.first+" "+result.second+
+        "\nm: " + m +
+        "\ni1: " + i1 +
+        "\nderiv: " + deriv.first + " " + deriv.second);*/
   return result;
 }
 
-KamadaKawaiVertexLayout.prototype.__done = function(vertex, global)
+/**
+ * Determines when to terminate the layout of the graph
+ *
+ * @param graph A valid graph instance
+ */
+KamadaKawaiVertexLayout.prototype.__done = function(delta_p, p, global)
 {
   if (global) {
-    //repeat until delta is 0 or energy change falls bellow tolerance
+    if (this.last_energy == Number.MAX_VALUE) {
+      this.last_energy = delta_p;
+      return false;
+    }
+        
+    //repeat until delta is 0 or energy change falls bellow tolerance    
+    var diff = this.last_energy - delta_p;
+    if (diff < 0)
+      diff = -diff;
+    /*alert("delta_p: " + delta_p + "\ndiff: " + diff);*/
+    var done = (delta_p == 0) || (diff/this.last_energy < this.tolerance);
+    this.last_energy = delta_p;
+    
+    return done;
   } else {
-   //repeat until delta is 0 or energy change falls bellow tolerance
+      if (this.last_local_energy == Number.MAX_VALUE) {
+      this.last_local_energy = delta_p;
+      return false;
+    }
+    
+   //repeat until delta is 0 or energy change falls bellow tolerance    
+    var diff = this.last_local_energy - delta_p;
+    if (diff < 0)
+      diff = -diff;
+    /*alert("delta_p: " + delta_p + "\ndiff: " + diff);          */
+    var done = (delta_p == 0) || (diff/this.last_local_energy < this.tolerance);
+    this.last_local_energy = delta_p;
+    
+    return done;
   }
 }
 
@@ -159,11 +208,16 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   this.graph = graph;
   this.spring_strength = new Array();
   this.distance = new Array();
+  this.last_energy = Number.MAX_VALUE;
+  this.last_local_energy = Number.MAX_VALUE;
   //http://www.boost.org/doc/libs/1_38_0/boost/graph/kamada_kawai_spring_layout.hpp
   //Create distance matrix
     //Johnson's algorithm to find shortest paths between all vertices should be implemented
     //http://en.wikipedia.org/wiki/Johnson's_algorithm
-  
+
+  randomLayout = new RandomVertexLayout(this.width, this.height);
+  randomLayout.layout(graph);
+    
   var txt = "";
   for (var i4 in graph.vertices) {
     var v = graph.vertices[i4];
@@ -199,10 +253,10 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
     }    
   }
   
-  while (!done) {
+  while (!this.__done(delta_p, p, true)) {
     var p_partials = new Array();
     for (i4 in graph.vertices) {
-      this.__calculatePartialDerivates(p, i);
+      p_partials[i4] = this.__computePartialDerivate(i4, p);
     }
     
     do {
@@ -216,9 +270,21 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
           var k_mi = this.spring_strength[p][i5];
           var l_mi = this.distance[p][i5];
           dE_dx_dx += k_mi * (1 - (l_mi * dy * dy) / dist_cubed);
-          dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed);
-          dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed);
-          dE_dx_dx += k_mi * (1 - (l_mi * dx * dx) / dist_cubed);
+          dE_dx_dy += k_mi * l_mi * dy * dx / dist_cubed;
+          dE_dy_dx += k_mi * l_mi * dy * dx / dist_cubed;
+          dE_dy_dy += k_mi * (1 - (l_mi * dy * dy) / dist_cubed);          
+          /*alert("p: " + p +
+                "\ni5: " + i5 +
+                "\ndx: " + dx+
+                "\ndy: " + dy +
+                "\ndist: " + dist +
+                "\ndist_cubed " + dist_cubed +
+                "\nk_mi: " + k_mi +
+                "\nl_mi: " + l_mi +
+                "\ndE_dx_dx: " + dE_dx_dx+
+                "\ndE_dx_dy: " + dE_dx_dy+
+                "\ndE_dy_dx: " + dE_dy_dx+
+                "\ndE_dy_dy: " + dE_dy_dy);*/
         }
       }
     
@@ -229,20 +295,36 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
                 / (dE_dx_dx * dE_dy_dy - dE_dx_dy * dE_dy_dx);
       var dy = (dE_dx_dx * dE_dy - dE_dy_dx * dE_dx)
                 / (dE_dy_dx * dE_dx_dy - dE_dx_dx * dE_dy_dy);
+      /*alert("p: " + p +
+            "\ndx: " + dx +
+            "\ndy: " + dy);*/
       graph.vertices[p].x += dx;
       graph.vertices[p].y += dy;
       
       deriv = this.__computePartialDerivates(p);
       partial_derivates[p] = deriv;
-      
+      /*alert("p: " + p +
+            "\nderiv:" + deriv.first + " " + deriv.second);*/
       delta_p = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);
-    } while(!done);
+    } while(!this.__done(delta_p, p, false));
     
     var old_p = p;
-    
+    for (var i6 in graph.vertices) {
+      var old_deriv_p = p_partials[i6];
+      var old_p_partial = this.__computePartialDerivate(i6, old_p);
+      var deriv = partial_derivates[i6];
+      
+      deriv.first += old_p_partial.first - old_deriv_p.first;
+      deriv.second += old_p_partial.second - old_deriv_p.second;
+      
+      partial_derivates[i6] = deriv;
+      delta = Math.sqrt(deriv.first*deriv.first + deriv.second*deriv.second);
+      if (delta > delta_p) {
+        p = i6;
+        delta_p = delta;
+      }
+    }
   }
   
-  
-  
-  //Do some voodoo magic with derivates
+  return true;
 }
