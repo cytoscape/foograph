@@ -270,6 +270,9 @@ Edge.prototype.draw = function(canvas, v)
   // Control point (needed only for curved edges)
   var x3 = this.controlX;
   var y3 = this.controlY;
+  
+  // Arrow tip and angle
+  var X_TIP, Y_TIP, ANGLE;
 
   /* Quadric Bezier curve definition. */
   function Bx(t) { return (1-t)*(1-t)*x1 + 2*(1-t)*t*x3 + t*t*x2; }
@@ -291,17 +294,121 @@ Edge.prototype.draw = function(canvas, v)
       xs = xn;
       ys = yn;
     }
+    
+    // Set the arrow tip coordinates
+    X_TIP = xs;
+    Y_TIP = ys;
+    
+    // Move the tip to (0,0) and calculate the angle 
+    // of the arrow head
+    ANGLE = angularCoord(Bx(1-2*dt) - X_TIP, By(1-2*dt) - Y_TIP);
+    
   } else {
     canvas.drawLine(x1, y1, x2, y2);
+    
+    // Set the arrow tip coordinates
+    X_TIP = x2;
+    Y_TIP = y2;
+    
+    // Move the tip to (0,0) and calculate the angle 
+    // of the arrow head
+    ANGLE = angularCoord(x1 - X_TIP, y1 - Y_TIP);
   }
   
-  // TO DO
-  if(this.style.showArrow) {    
+  if(this.style.showArrow) { 
+    drawArrow(ANGLE, X_TIP, Y_TIP);
   }
   
   // TO DO
   if(this.style.showLabel) {
   }
+  
+  /** 
+   * Draws an edge arrow. 
+   * @param phi The angle (in radians) of the arrow in polar coordinates. 
+   * @param x X coordinate of the arrow tip.
+   * @param y Y coordinate of the arrow tip.
+   */
+  function drawArrow(phi, x, y) 
+  {
+    // Arrow bounding box (in px)
+    var H = 50;
+    var W = 10;
+    
+    // Set cartesian coordinates of the arrow
+    var p11 = 0, p12 = 0;
+    var p21 = H, p22 = W/2;
+    var p31 = H, p32 = -W/2;
+    
+    // Convert to polar coordinates
+    var r2 = radialCoord(p21, p22);
+    var r3 = radialCoord(p31, p32);
+    var phi2 = angularCoord(p21, p22);
+    var phi3 = angularCoord(p31, p32);
+    
+    // Rotate the arrow
+    phi2 += phi;
+    phi3 += phi;
+    
+    // Update cartesian coordinates
+    p21 = r2 * Math.cos(phi2);
+    p22 = r2 * Math.sin(phi2);    
+    p31 = r3 * Math.cos(phi3);
+    p32 = r3 * Math.sin(phi3);
+    
+    // Translate
+    p11 += x; 
+    p12 += y;
+    p21 += x;
+    p22 += y;
+    p31 += x;
+    p32 += y;
+    
+    // Draw
+    canvas.fillPolygon(new Array(p11, p21, p31), new Array(p12, p22, p32));
+   // canvas.fillEllipse(p11, p12, W, H);
+   // document.write(p11+","+p12+","+p21+","+p22+","+p31+","+p32+"<br>");
+  }
+  
+  /** 
+   * Get the angular coordinate.
+   * @param x X coordinate
+   * @param y Y coordinate
+   */
+   function angularCoord(x, y)
+   {
+     var phi;
+     
+     if (x > 0 && y >= 0) {
+      phi = Math.atan(y/x);
+     }
+     if (x > 0 && y < 0) {
+       phi = Math.atan(y/x) + 2*Math.PI;
+     }
+     if (x < 0) {
+       phi = Math.atan(y/x) + Math.PI;
+     }
+     if (x = 0 && y > 0) {
+       phi = Math.PI/2;
+     }
+     if (x = 0 && y < 0) {
+       phi = 3*Math.PI/2;
+     }
+     
+     return phi;
+   }
+   
+   /** 
+    * Get the radian coordiante.
+    * @param x1 
+    * @param y1 
+    * @param x2
+    * @param y2 
+    */
+   function radialCoord(x, y) 
+   {
+     return Math.sqrt(x*x + y*y);
+   }
 }
 
 /**
