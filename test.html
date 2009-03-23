@@ -80,7 +80,7 @@ Lo and behold!<br>
 </select>
 <input type="button" onclick="dumpGraph()" />
 <div id="report" style="position:relative"></div><br>
-<div id="canvas" style="position:relative;height:800px;width:800px;border:10px solid black;"></div>
+<div id="canvas" style="position:relative;height:800px;width:1400px;border:10px solid black;"></div>
 
 <script type="text/javascript" src="samples/tree.js"></script>
 <script type="text/javascript" src="samples/famrel.js"></script>
@@ -97,7 +97,7 @@ Lo and behold!<br>
 var canvas = new jsGraphics("canvas");
   
 // FIXME
-width = 800;
+width = 1400;
 height = 800;
 
 function paint() 
@@ -120,8 +120,6 @@ function paint()
   }
   
   var vertexLayoutManager = null;
-  
-  canvas.clear();
  
   switch (algoSelection) {
     case 0: {
@@ -163,6 +161,7 @@ function paint()
   var start = new Date();
   //Needed to enable step by step layout creation
   vertexLayoutManager.canvas = canvas;
+  vertexLayoutManager.callback = function() { this.canvas.clear(); this.graph.plot(canvas); this.canvas.paint(); alert("step"); }
   // Do vertex layout
   vertexLayoutManager.layout(g);
   
@@ -174,6 +173,7 @@ function paint()
   
   start = new Date();
   // Plot graph  to canvas
+  canvas.clear();
   g.plot(canvas);
   
   // Display plotted graph
