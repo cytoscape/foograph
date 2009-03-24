@@ -62,10 +62,11 @@ function dumpGraph() {
 </head>
 <body>
 Lo and behold!<br>
-<select id="graph" onchange="paint()">
+<form onsubmit="return false;">
+<select id="graph">
   <option>Select graph</option>
 </select>
-<select id="algo" onchange="paint()">
+<select id="algo">
   <option>Select algorithm</option>
   <option>Random</option>
   <option>Circular</option>
@@ -79,6 +80,13 @@ Lo and behold!<br>
   <option>Curvilinear method</option>
 </select>
 <input type="button" onclick="dumpGraph()" />
+<input id="stepByStep" type="checkbox" value="1">Step By Step</input>
+Size:
+<input id="width" type="text" value="1400" />
+x
+<input id="height" type="text" value="800" />
+<input id="redraw" type="submit" onclick="paint()" value="Draw Me!" />
+</form>
 <div id="report" style="position:relative"></div><br>
 <div id="canvas" style="position:relative;height:800px;width:1400px;border:10px solid black;"></div>
 
@@ -96,14 +104,18 @@ Lo and behold!<br>
 
 var canvas = new jsGraphics("canvas");
   
-// FIXME
-width = 1400;
-height = 800;
-
 function paint() 
 {
   var algoSelection = document.getElementById("algo").selectedIndex - 1;
   var graphSelection = document.getElementById("graph").selectedIndex - 1;
+  var stepByStep = document.getElementById("stepByStep");
+  
+  // FIXME
+  width = document.getElementById("width").value;
+  height = document.getElementById("height").value;
+
+  document.getElementById("canvas").style.width = width + 'px';
+  document.getElementById("canvas").style.height = height + 'px';
   
   /* Select Graph */
   var g
@@ -161,7 +173,11 @@ function paint()
   var start = new Date();
   //Needed to enable step by step layout creation
   vertexLayoutManager.canvas = canvas;
-  vertexLayoutManager.callback = function() { this.canvas.clear(); this.graph.plot(canvas); this.canvas.paint(); alert("step"); }
+  if(stepByStep.checked) {
+    vertexLayoutManager.callback = function() { this.canvas.clear(); this.graph.plot(canvas); this.canvas.paint(); alert("step"); }
+  } else {
+    vertexLayoutManager.callback = function() {};
+  }
   // Do vertex layout
   vertexLayoutManager.layout(g);
   
