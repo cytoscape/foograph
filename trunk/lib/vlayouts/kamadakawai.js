@@ -326,45 +326,7 @@ KamadaKawaiVertexLayout.prototype.layout = function(graph)
   //this.graph.removeVertex(master);
   
   //Move and resize graph to fit into the drawing area;
-  var mnx = 10;
-  var mxx = this.width - 100;
-  var mny = 10;
-  var mxy = this.height - 50;
-  var preserveAspect = true;
-  
-  var minx = Number.MAX_VALUE;
-  var miny = Number.MAX_VALUE
-  var maxx = Number.MIN_VALUE;
-  var maxy = Number.MIN_VALUE;
-  
-  for (var i7 in graph.vertices) {
-    var v = graph.vertices[i7];
-    if (v.x < minx)
-      minx = v.x;
-    if (v.y < miny)
-      miny = v.y;
-    if (v.x > maxx)
-      maxx = v.x;
-    if (v.y > maxy)
-      maxy = v.y;
-  }
-  var dx = mnx-minx;
-  var dy = mny-miny;
-  var kx = (mxx-mnx) / (maxx - minx);
-  var ky = (mxy-mny) / (maxy - miny);
-
-  if (preserveAspect) {
-    kx = Math.min(kx, ky);
-    ky = Math.min(kx, ky);
-  }
-  
-  for (var i8 in graph.vertices) {
-    var v = graph.vertices[i8];
-    v.x += dx;
-    v.x *= kx;
-    v.y += dy;
-    v.y *= ky;
-  }
+  graph.normalize(this.width, this.height);
   
   return true;
 }

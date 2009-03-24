@@ -177,13 +177,14 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         }
         /* Treat the walls as static objects emiting force Fw. */
         // Calculate the sum of "wall" forces in (v.x, v.y)
+        /*
         var x = Math.max(eps, v.x);
         var y = Math.max(eps, v.y);
         var wx = Math.max(eps, this.width - v.x);
         var wy = Math.max(eps, this.height - v.y);   // Gotta love all those NaN's :)
         var Rx = Fw(x) - Fw(wx);
         var Ry = Fw(y) - Fw(wy);
-        
+        */
         v.dx = v.dx + Rx;
         v.dy = v.dy + Ry;
       }
@@ -227,6 +228,7 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         v.y = v.y + (v.dy/d) * Math.min(d, t);
         
         /* Stay inside the frame. */
+        /*
         borderWidth = this.width / 50;
         if (v.x < borderWidth) {
           v.x = borderWidth; 
@@ -239,7 +241,7 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
         } else if (v.y > this.height - borderWidth) {
           v.y = this.height - borderWidth;
         }
-        
+        */
         v.x = Math.round(v.x);
         v.y = Math.round(v.y);
       }
@@ -259,4 +261,6 @@ ForceDirectedVertexLayout.prototype.layout = function(graph)
       graph.removeVertex(centers[i]);
     }
   }
+  
+  graph.normalize(this.width, this.height);
 }

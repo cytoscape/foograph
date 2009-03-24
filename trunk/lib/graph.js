@@ -254,6 +254,63 @@ function Edge(label, weight, endVertex, style)
   }
 }
 
+
+/**
+ * Fits the graph into the bounding box
+ *
+ * @param width
+ * @param height
+ * @param preserveAspect
+ */
+Graph.prototype.normalize = function(width, height, preserveAspect) 
+{
+  for (var i8 in this.vertices) {
+    var v = this.vertices[i8];
+    v.oldX = v.x;
+    v.oldY = v.y;
+  }
+  var mnx = 10;
+  var mxx = width - 100;
+  var mny = 10;
+  var mxy = height - 50;
+  if (preserveAspect == null)
+    preserveAspect = true;
+  
+  var minx = Number.MAX_VALUE;
+  var miny = Number.MAX_VALUE
+  var maxx = Number.MIN_VALUE;
+  var maxy = Number.MIN_VALUE;
+  
+  for (var i7 in this.vertices) {
+    var v = this.vertices[i7];
+    if (v.x < minx)
+      minx = v.x;
+    if (v.y < miny)
+      miny = v.y;
+    if (v.x > maxx)
+      maxx = v.x;
+    if (v.y > maxy)
+      maxy = v.y;
+  }
+  var dx = mnx-minx;
+  var dy = mny-miny;
+  var kx = (mxx-mnx) / (maxx - minx);
+  var ky = (mxy-mny) / (maxy - miny);
+
+  if (preserveAspect) {
+    kx = Math.min(kx, ky);
+    ky = Math.min(kx, ky);
+  }
+  
+  for (var i8 in this.vertices) {
+    var v = this.vertices[i8];
+    v.x += dx;
+    v.x *= kx;
+    v.y += dy;
+    v.y *= ky;
+  }
+}
+
 /**
  * Draw edge method. Draws edge "v" --> "this".
  *
