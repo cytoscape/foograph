@@ -1,0 +1,56 @@
+var g = new Graph("FamRel (single tree)", true);
+
+var v1 = new Vertex("tina", -1, -1);
+var v2 = new Vertex("thomas", -1, -1);
+var v3 = new Vertex("william", -1, -1);
+var v4 = new Vertex("sally", -1, -1);
+var v5 = new Vertex("jeffrey", -1, -1);
+var v6 = new Vertex("vanessa", -1, -1);
+var v7 = new Vertex("patrick", -1, -1);
+var v8 = new Vertex("susan", -1, -1);
+var v9 = new Vertex("patricia", -1, -1);
+var v10 = new Vertex("andrew", -1, -1);
+var v11 = new Vertex("melanie", -1, -1);
+var v12 = new Vertex("jill", -1, -1);
+var v13 = new Vertex("john", -1, -1);
+var v14 = new Vertex("joanne", -1, -1);
+var v15 = new Vertex("michael", -1, -1);
+var v16 = new Vertex("michelle", -1, -1);
+var v17 = new Vertex("steve", -1, -1);
+
+g.insertVertex(v1);
+g.insertVertex(v2);
+g.insertVertex(v3);
+g.insertVertex(v4);
+g.insertVertex(v5);
+g.insertVertex(v6);
+g.insertVertex(v7);
+g.insertVertex(v8);
+g.insertVertex(v9);
+g.insertVertex(v10);
+g.insertVertex(v11);
+g.insertVertex(v12);
+g.insertVertex(v13);
+g.insertVertex(v14);
+g.insertVertex(v15);
+g.insertVertex(v16);
+g.insertVertex(v17);
+
+g.insertEdge("", 1, v1, v3);
+g.insertEdge("", 1, v2, v3);
+g.insertEdge("", 1, v2, v4);
+g.insertEdge("", 1, v2, v5);
+g.insertEdge("", 1, v3, v6);
+g.insertEdge("", 1, v3, v9);
+g.insertEdge("", 1, v4, v10);
+g.insertEdge("", 1, v4, v11);
+g.insertEdge("", 1, v6, v8);
+g.insertEdge("", 1, v7, v8);
+g.insertEdge("", 1, v9, v13);
+g.insertEdge("", 1, v10, v14);
+g.insertEdge("", 1, v12, v14);
+g.insertEdge("", 1, v13, v15);
+g.insertEdge("", 1, v13, v16);
+g.insertEdge("", 1, v14, v17);
+
+registerGraph(g);
