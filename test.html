@@ -6,6 +6,8 @@
 
 <!-- General graph objects -->
 <script type="text/javascript" src="lib/graph.js"></script>
+<script type="text/javascript" src="lib/canvasWrapper.js"></script>
+
 
 <!-- Vertex layouts manager -->
 <script type="text/javascript" src="lib/vlayouts/random.js"></script>
@@ -81,6 +83,7 @@ Lo and behold!<br>
 </select>
 <input type="button" onclick="dumpGraph()" />
 <input id="stepByStep" type="checkbox" value="1">Step By Step</input>
+<input id="divCanvas" type="checkbox" value="1">DivCanvas</input>
 Size:
 <input id="width" type="text" value="1400" />
 x
@@ -88,8 +91,10 @@ x
 <input id="redraw" type="submit" onclick="paint()" value="Draw Me!" />
 </form>
 <div id="report" style="position:relative"></div><br>
-<div id="canvas" style="position:relative;height:800px;width:1400px;border:10px solid black;"></div>
-
+<div style="position:relative;">
+<canvas id="htmlCanvas" style="display:none;width:1400px; height:800px;border:10px solid black;"></canvas>
+<div id="canvas" style="display:none;position:relative;height:800px;width:1400px;border:10px solid black;"></div>
+</div>
 <script type="text/javascript" src="samples/tree.js"></script>
 <script type="text/javascript" src="samples/famrel.js"></script>
 <script type="text/javascript" src="samples/famrel1.js"></script>
@@ -101,21 +106,60 @@ x
 
 <script type="text/javascript">
 <!--
+var selectAlgo = document.getElementById("algo");
+var selectGraph = document.getElementById("graph");
 
-var canvas = new jsGraphics("canvas");
-  
+var chkStepByStep = document.getElementById("stepByStep");
+var chkUseDivCanvas = document.getElementById("divCanvas");
+
+var txtWidth = document.getElementById("width");
+var txtHeight = document.getElementById("height");
+
+var divCanvas = document.getElementById("canvas");
+var canvasCanvas = document.getElementById("htmlCanvas");
+
+canvasCompatible = false;
+try {
+  this.canvasCompatible = !!(document.createElement('canvas').getContext('2d')); // S60
+} catch(e) {}
+
+if (!canvasCompatible) {
+  chkUseDivCanvas.disabled = true;
+  chkUseDivCanvas.checked = true;
+}
+
+var canvas = null;
+
 function paint() 
 {
-  var algoSelection = document.getElementById("algo").selectedIndex - 1;
-  var graphSelection = document.getElementById("graph").selectedIndex - 1;
-  var stepByStep = document.getElementById("stepByStep");
-  
-  // FIXME
-  width = document.getElementById("width").value;
-  height = document.getElementById("height").value;
+  width = txtWidth.value;
+  height = txtHeight.value;
 
-  document.getElementById("canvas").style.width = width + 'px';
-  document.getElementById("canvas").style.height = height + 'px';
+  useDivCanvas = chkUseDivCanvas.checked;
+  
+  if (canvas != null)
+    canvas.clear();
+  
+  if (useDivCanvas) {
+    divCanvas.style.width = width + 'px';
+    divCanvas.style.height = height + 'px';
+    canvasCanvas.style.display = 'none';
+    divCanvas.style.display = 'block';
+    
+    canvas = new jsGraphics("canvas");
+  } else {
+    canvasCanvas.style.width = width + 'px';
+    canvasCanvas.style.height = height + 'px';
+    canvasCanvas.width = width;
+    canvasCanvas.height = height;
+    canvasCanvas.style.display = 'block';
+    divCanvas.style.display = 'none';
+    
+    canvas = new canvasWrapper(canvasCanvas);
+  }
+  
+  var graphSelection = selectGraph.selectedIndex - 1;
+  var algoSelection = selectAlgo.selectedIndex - 1
   
   /* Select Graph */
   var g
@@ -132,7 +176,7 @@ function paint()
   }
   
   var vertexLayoutManager = null;
- 
+ //.selectedIndex - 1
   switch (algoSelection) {
     case 0: {
       // Randomly layout the vertices
@@ -173,7 +217,7 @@ function paint()
   var start = new Date();
   //Needed to enable step by step layout creation
   vertexLayoutManager.canvas = canvas;
-  if(stepByStep.checked) {
+  if(chkStepByStep.checked) {
     vertexLayoutManager.callback = function() { this.canvas.clear(); this.graph.plot(canvas); this.canvas.paint(); alert("step"); }
   } else {
     vertexLayoutManager.callback = function() {};
@@ -189,6 +233,7 @@ function paint()
   
   start = new Date();
   // Plot graph  to canvas
+  
   canvas.clear();
   g.plot(canvas);
   
