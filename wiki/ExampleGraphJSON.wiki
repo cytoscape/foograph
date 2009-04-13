@@ -1,4 +1,4 @@
-# an example of a graph in JSON notation
+#summary an example of a graph in JSON notation
 
 = Example graph =
 
