@@ -67,5 +67,8 @@ canvasWrapper = function(canvas)
   this.paint = function() {}
   
   this.drawStringRect = function(text, x, y, maxWidth, align) {
+    this.ctx.font = '12pt Serif'
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(text, x+maxWidth/2, y+12, maxWidth);
   }
 }
