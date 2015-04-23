@@ -1,0 +1,1 @@
+A native Javascript library implementing graph drawing algorithms.
